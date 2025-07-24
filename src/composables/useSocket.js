@@ -2,22 +2,15 @@ import io from "socket.io-client";
 import { useRouter, useRoute } from "vue-router";
 
 import { useAppStore } from "../store/useAppStore";
+import getUserId from "./getUserId";
 
 export default function useSocket() {
     const store = useAppStore();
     const router = useRouter();
     const route = useRoute();
-
-    let userId = localStorage.getItem("userId");
-
-    if (!userId) {
-        userId = [...Array(10)]
-            .map(() => Math.random().toString(36)[2])
-            .join("");
-        localStorage.setItem("userId", userId);
-    }
-
     const socket = io("http://localhost:3000");
+
+    let userId = getUserId();
 
     socket.on("connect", () => {
         store.setSocket(socket);
