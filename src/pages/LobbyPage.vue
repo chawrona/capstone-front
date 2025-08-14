@@ -1,5 +1,6 @@
 <script setup>
-import { useRoute } from "vue-router";
+import { onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 import Color from "@/assets/color.svg";
 import Exit from "@/assets/exit.svg";
@@ -11,14 +12,37 @@ import Remove from "@/assets/remove.svg";
 import Right from "@/assets/right.png";
 import Start from "@/assets/start.svg";
 
+import { useAppStore } from "../store/useAppStore";
+
 const route = useRoute();
+const store = useAppStore();
+const router = useRouter();
+const data = ref(null);
+
+onMounted(() => {
+    store.setLoading(true);
+
+    // Jak będzie prawdziwy event z danymi to można usunąć request animation frame
+    setTimeout(() => {
+       data.value = true;
+        requestAnimationFrame(() => {
+            store.setLoading(false);
+        });
+   
+    }, 5000);
+});
+
+const leaveLobby = () => {
+    store.emit("leaveLobby");
+    router.push("/");
+};
 </script>
 
 <template>
     <div class="app-container">
         <!-- <h1 class="theme-subtitle">Kod Pokoju #{{ route.params.id }}</h1> -->
         <!-- <h2 class="theme-subtitle">Gracze</h2> -->
-        <main class="container">
+        <main v-if="data" class="container">
             <ul class="theme-list">
                 <!-- <li>
                     <div class="ready golden"></div> 
@@ -94,24 +118,24 @@ const route = useRoute();
                     <img :src="Ready" alt="" />
                     Gotowy do gry
                 </button>
-                <button class="theme-button option-button" disabled>
+                <!-- <button class="theme-button option-button" disabled>
                     <img :src="Name" alt="" />
                     Zmień nickname
-                </button>
-                <button class="theme-button option-button" disabled>
+                </button> -->
+                <!-- <button class="theme-button option-button" disabled>
                     <img :src="Color" alt="" />
                     Zmień kolor
-                </button>
+                </button> -->
 
-                <button
+                <!-- button
                     disabled
                     class="theme-button option-button"
                     style="margin-left: auto"
                 >
                     <img :src="List" alt="" />
                     Zmień grę
-                    <!-- Dla nie admina: Przejrzyj gry -->
-                </button>
+                    // Dla nie admina: Przejrzyj gry
+                </button> -->
                 <button
                     disabled
                     class="theme-button option-button"
@@ -123,18 +147,28 @@ const route = useRoute();
             </div>
 
             <div class="panel bottom-left">
-                <button class="theme-button option-button" disabled>
+                <!-- <button class="theme-button option-button" disabled>
                     <img :src="Remove" alt="" />
                     Wyrzuć Gracza
-                </button>
-                <button class="theme-button option-button">
+                </button> -->
+                <button class="theme-button option-button" @click="leaveLobby">
                     <img :src="Exit" alt="" />
                     Wyjdź
                 </button>
             </div>
 
             <div class="panel top-right">
-                <div class="gameCard">
+                <p class="theme-title ready-count">Gotowi (2/5)</p>
+                <ul class="lobby-users">
+                    <li class="theme-subtitle"><b>SenseiW</b></li>
+                    <li class="theme-subtitle">ArekiS</li>
+                    <li class="theme-subtitle current-user">
+                        <span class="you">(Ty)</span> Versus137
+                    </li>
+                    <li class="theme-subtitle">Thinkofistodo</li>
+                    <li class="theme-subtitle">Rever</li>
+                </ul>
+                <!-- <div class="gameCard">
                     <div class="wrap">
                         <img :src="Left" alt="" class="left" />
                         <img :src="Right" alt="" class="right" />
@@ -175,7 +209,7 @@ const route = useRoute();
                             >
                         </li>
                     </ul>
-                </div>
+                </div> -->
 
                 <!-- <button class="theme-button option-button">
                     <img :src="Start" alt="" />
@@ -221,7 +255,21 @@ const route = useRoute();
     margin-top: auto;
 }
 
-.description {
+.you {
+    font-family: serif;
+}
+.ready-count {
+    text-align: right;
+    font-size: 1.25rem;
+}
+
+.lobby-users {
+    text-align: right;
+    list-style: none;
+    font-size: 1.5rem;
+}
+.current-user {
+    font-weight: bold;
 }
 
 .panel {

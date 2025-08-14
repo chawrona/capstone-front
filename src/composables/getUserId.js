@@ -1,5 +1,5 @@
 export default function getUserId() {
-    const userId = localStorage.getItem("userId");
+    let userId = localStorage.getItem("userId");
 
     if (!userId) {
         userId = [...Array(10)]

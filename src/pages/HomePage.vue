@@ -1,3 +1,50 @@
+<script setup>
+import { computed, onUnmounted, ref } from "vue";
+import { useToast } from "vue-toast-notification";
+
+import { useAppStore } from "../store/useAppStore";
+
+const store = useAppStore();
+const toast = useToast();
+
+const lobbyId = ref("");
+const awaitingCreateLobby = ref(false);
+const awaitingJoinLobby = ref(false);
+const blockEverything = computed(
+    () => awaitingCreateLobby.value || awaitingJoinLobby.value,
+);
+
+
+let errorTimeout = ref(null);
+
+const toastError = (message) => {
+    errorTimeout.value = setTimeout(() => {
+        awaitingCreateLobby.value = false;
+        toast.error(message, {
+            duration: 4000,
+            position: "top-left",
+            type: "error",
+        });
+    }, 5000);
+};
+
+const createLobby = () => {
+    awaitingCreateLobby.value = true;
+    store.emit("createLobby");
+    toastError("Wystąpił błąd podczas tworzenia pokoju.");
+};
+
+const joinLobby = () => {
+    awaitingJoinLobby.value = true;
+    store.emit("joinLobby", {
+        lobbyId: lobbyId.value,
+    });
+    toastError("Wystąpił błąd podczas dołączania do pokoju.");
+};
+
+onUnmounted(() => clearTimeout(errorTimeout.value))
+</script>
+
 <template>
     <div class="app-container">
         <main class="content">
@@ -5,15 +52,30 @@
             <h1 class="theme-title">BOARD GAMES</h1>
 
             <div class="wrap">
-                <button class="theme-button create">Stwórz Pokój</button>
+                <button
+                    class="theme-button create"
+                    :data-awaiting="awaitingCreateLobby"
+                    :disabled="blockEverything"
+                    @click="createLobby"
+                >
+                    Stwórz Pokój
+                </button>
                 <div class="separator" />
-                <form action="" class="form">
+                <form class="form" @submit.prevent="joinLobby">
                     <input
+                        v-model="lobbyId"
                         type="text"
                         placeholder="#cR4ak8"
                         class="theme-input"
+                        :disabled="blockEverything"
                     />
-                    <button class="theme-button join">Dołącz</button>
+                    <button
+                        class="theme-button join"
+                        :data-awaiting="awaitingJoinLobby"
+                        :disabled="blockEverything"
+                    >
+                        Dołącz
+                    </button>
                 </form>
             </div>
         </main>

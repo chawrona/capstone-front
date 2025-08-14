@@ -1,0 +1,32 @@
+.v-toast__item--error {
+  border: 1px solid #ffffff;
+  background-color: #570505da;
+  border-radius: 4px;
+  color: #ffffff;
+  font-family: "Cinzel";
+
+  font-family: sans-serif;
+  font-size: 1rem;
+
+  letter-spacing: 0.05em;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    box-shadow 0.2s;
+}
+
+.v-toast__item .v-toast__text {
+  padding: 0.75em 2em;
+  padding-left: 1.25em;
+}
+
+.v-toast__item--error .v-toast__icon {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+}
+
+.v-toast__item {
+  animation-duration: 0.75s;
+  min-height: 3.5rem;
+}
