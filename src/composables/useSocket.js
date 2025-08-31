@@ -20,15 +20,16 @@ export default function useSocket() {
 
         store.emit("initialRequest", {
             lobbyId: route.params.id,
+            username: localStorage.getItem("username"),
         });
     });
 
-    socket.on("homepage", (error) => {
+    socket.on("homepage", (payload) => {
         router.push("/");
         store.setLoading(false);
 
-        if (error) {
-            toast.error(error.errorMessage, {
+        if (payload) {
+            toast.error(payload.error, {
                 duration: 4000,
                 position: "top-left",
                 type: "error",
@@ -44,9 +45,19 @@ export default function useSocket() {
         router.push(`/${data.lobbyId}/${data.game}`);
     });
 
-    socket.on("error", (error) => {
-        if (error) {
-            toast.error(error.errorMessage, {
+    socket.on("error", (payload) => {
+        if (payload) {
+            toast.error(payload.error, {
+                duration: 4000,
+                position: "top-left",
+                type: "error",
+            });
+        }
+    });
+
+    socket.on("info", (payload) => {
+        if (payload) {
+            toast.success(payload.info, {
                 duration: 4000,
                 position: "top-left",
                 type: "error",

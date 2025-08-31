@@ -1,13 +1,18 @@
 <script setup>
+import { storeToRefs } from "pinia";
+
 import LoadingScreen from "./components/common/LoadingScreen.vue";
 import useSocket from "./composables/useSocket";
+import { useAppStore } from "./store/useAppStore";
 
+const store = useAppStore();
+const { socket } = storeToRefs(store);
 useSocket();
 </script>
 
 <template>
-    <LoadingScreen :show="isLoading" />
-    <router-view />
+    <LoadingScreen :show="isLoading || !socket" />
+    <router-view v-if="socket" />
 </template>
 
 <style scoped></style>

@@ -12,7 +12,7 @@ const routes = [
         path: "/:id/brianboru",
     },
     {
-        component: () => import("@/pages/LobbyPage.vue"),
+        component: () => import("@/pages/lobby/LobbyPage.vue"),
         name: "lobby",
         path: "/:id",
     },

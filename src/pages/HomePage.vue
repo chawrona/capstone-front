@@ -1,11 +1,9 @@
 <script setup>
-import { computed, onUnmounted, ref } from "vue";
-import { useToast } from "vue-toast-notification";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 
 import { useAppStore } from "../store/useAppStore";
 
 const store = useAppStore();
-const toast = useToast();
 
 const lobbyId = ref("");
 const awaitingCreateLobby = ref(false);
@@ -14,24 +12,16 @@ const blockEverything = computed(
     () => awaitingCreateLobby.value || awaitingJoinLobby.value,
 );
 
-
-let errorTimeout = ref(null);
-
-const toastError = (message) => {
-    errorTimeout.value = setTimeout(() => {
+onMounted(() => {
+    store.socket.on("error", () => {
         awaitingCreateLobby.value = false;
-        toast.error(message, {
-            duration: 4000,
-            position: "top-left",
-            type: "error",
-        });
-    }, 5000);
-};
+        awaitingJoinLobby.value = false;
+    });
+});
 
 const createLobby = () => {
     awaitingCreateLobby.value = true;
     store.emit("createLobby");
-    toastError("Wystąpił błąd podczas tworzenia pokoju.");
 };
 
 const joinLobby = () => {
@@ -39,10 +29,7 @@ const joinLobby = () => {
     store.emit("joinLobby", {
         lobbyId: lobbyId.value,
     });
-    toastError("Wystąpił błąd podczas dołączania do pokoju.");
 };
-
-onUnmounted(() => clearTimeout(errorTimeout.value))
 </script>
 
 <template>
@@ -65,6 +52,7 @@ onUnmounted(() => clearTimeout(errorTimeout.value))
                     <input
                         v-model="lobbyId"
                         type="text"
+                        maxlength="6"
                         placeholder="#cR4ak8"
                         class="theme-input"
                         :disabled="blockEverything"
@@ -72,7 +60,7 @@ onUnmounted(() => clearTimeout(errorTimeout.value))
                     <button
                         class="theme-button join"
                         :data-awaiting="awaitingJoinLobby"
-                        :disabled="blockEverything"
+                        :disabled="blockEverything || lobbyId.length < 6"
                     >
                         Dołącz
                     </button>
