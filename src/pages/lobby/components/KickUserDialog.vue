@@ -1,9 +1,9 @@
 <script setup>
 import { ref } from "vue";
 
-import { useAppStore } from "../../../store/useAppStore";
-
 import Cancel from "@/assets/cancel.svg";
+
+import { useAppStore } from "../../../store/useAppStore";
 
 const props = defineProps(["usersAvailableToKick"]);
 

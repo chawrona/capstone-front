@@ -5,10 +5,9 @@ import { useRouter } from "vue-router";
 import Exit from "@/assets/exit.svg";
 import Remove from "@/assets/remove.svg";
 
-
 import { useAppStore } from "../../../../store/useAppStore";
-import OptionButton from "../OptionButton.vue";
 import KickUserDialog from "../KickUserDialog.vue";
+import OptionButton from "../OptionButton.vue";
 const router = useRouter();
 const props = defineProps(["currentUser", "lobbyUsers"]);
 
@@ -16,7 +15,9 @@ const kickUserDialogRef = ref(null);
 const store = useAppStore();
 
 const usersAvailableToKick = computed(() =>
-    props.lobbyUsers.filter((user) => user.publicId !== props.currentUser),
+    props.lobbyUsers.filter(
+        (user) => user.publicId !== props.currentUser.publicId,
+    ),
 );
 
 const leaveLobby = () => {
@@ -27,7 +28,6 @@ const leaveLobby = () => {
 
 <template>
     <div class="panel bottom-left">
-        
         <KickUserDialog
             v-if="currentUser.isAdmin"
             ref="kickUserDialogRef"
@@ -35,7 +35,7 @@ const leaveLobby = () => {
         />
 
         <OptionButton
-            v-if="currentUser.isAdmin"
+            v-if="currentUser.isAdmin && usersAvailableToKick.length"
             :icon="Remove"
             content="Wyrzuć Gracza"
             @click="kickUserDialogRef?.openDialog"

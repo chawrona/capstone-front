@@ -12,7 +12,7 @@ import ChangeUserColorDialog from "../ChangeUserColorDialog.vue";
 import ChangeUsernameDialog from "../ChangeUsernameDialog.vue";
 import OptionButton from "../OptionButton.vue";
 
-const props = defineProps(["currentUser", "gameData"]);
+const props = defineProps(["currentUser", "gameData", "availableColors"]);
 
 const changeUsernameDialogRef = ref(null);
 const changeUserColorDialogRef = ref(null);
@@ -22,9 +22,10 @@ const toggleReadyDisabled = ref(false);
 const store = useAppStore();
 
 const toggleReady = () => {
+    if (toggleReadyDisabled.value) return;
     toggleReadyDisabled.value = true;
     store.emit("toggleReady");
-    setTimeout(() => (toggleReadyDisabled.value = false), 1000);
+    setTimeout(() => (toggleReadyDisabled.value = false), 300);
 };
 </script>
 
@@ -38,13 +39,11 @@ const toggleReady = () => {
         <ChangeUserColorDialog
             ref="changeUserColorDialogRef"
             :current-user="props.currentUser"
-            :available-colors="props.gameData.availableColors"
+            :available-colors="props.availableColors"
         />
 
         <OptionButton
             v-if="!props.currentUser.isAdmin"
-            :disabled="toggleReadyDisabled"
-            :data-awaiting="toggleReadyDisabled"
             :icon="!props.currentUser.isReady ? Ready : Cancel"
             :content="
                 !props.currentUser.isReady

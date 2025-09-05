@@ -37,8 +37,8 @@ export default function useSocket() {
         }
     });
 
-    socket.on("lobby", (data) => {
-        router.push(`/${data.lobbyId}`);
+    socket.on("lobby", (lobbyId) => {
+        router.push(`/${lobbyId}`);
     });
 
     socket.on("game", (data) => {
@@ -60,7 +60,7 @@ export default function useSocket() {
             toast.success(payload.info, {
                 duration: 4000,
                 position: "top-left",
-                type: "error",
+                type: "info",
             });
         }
     });

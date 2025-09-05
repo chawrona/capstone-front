@@ -19,6 +19,10 @@ onMounted(() => {
     });
 });
 
+onUnmounted(() => {
+    store.socket.off("error");
+});
+
 const createLobby = () => {
     awaitingCreateLobby.value = true;
     store.emit("createLobby");

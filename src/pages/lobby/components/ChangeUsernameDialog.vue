@@ -37,6 +37,9 @@ const changeUsername = () => {
                 type="text"
                 class="theme-input changeUsernameInput"
                 :placeholder="username"
+                minlength="3"
+                maxlength="20"
+                required
             />
             <button class="theme-button" @click="changeUsername">Zmień</button>
         </div>

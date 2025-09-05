@@ -22,6 +22,7 @@ export const useAppStore = defineStore("socket", {
         },
     },
     state: () => ({
+        initialRequestData: false,
         isLoading: true,
         socket: null,
         userId: undefined,

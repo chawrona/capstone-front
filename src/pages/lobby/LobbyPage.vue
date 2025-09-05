@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import { useAppStore } from "../../store/useAppStore";
 import BottomLeftPanel from "./components/panels/BottomLeftPanel.vue";
@@ -21,97 +21,17 @@ const currentUser = computed(() =>
 onMounted(() => {
     store.setLoading(true);
 
-    setTimeout(() => {
-        data.value = {
-            currentUser: "1",
-            gameData: {
-                availableColors: [
-                    {
-                        hex: "#d72638",
-                        name: "crimson",
-                    },
-                    {
-                        hex: "#3b82f6",
-                        name: "blue",
-                    },
-                    {
-                        hex: "#22c55e",
-                        name: "green",
-                    },
-                    {
-                        hex: "#facc15",
-                        name: "yellow",
-                    },
-                    {
-                        hex: "#9333ea",
-                        name: "purple",
-                    },
-                    {
-                        hex: "#f97316",
-                        name: "orange",
-                    },
-                ],
-                description: "Lorem ipsum",
-                game: "brianboru",
-                maxPlayers: 5,
-            },
-            lobbyUsers: [
-                {
-                    color: {
-                        hex: "#d72638",
-                        name: "crimson",
-                    },
-                    isAdmin: true,
-                    isReady: false,
-                    publicId: "1",
-                    username: "Thinkofistodo",
-                },
-                {
-                    color: null,
-                    isAdmin: false,
-                    isReady: true,
-                    publicId: "2",
-                    username: "BlueFalcon",
-                },
-                {
-                    color: {
-                        hex: "#3b82f6",
-                        name: "blue",
-                    },
-                    isAdmin: false,
-                    isReady: true,
-                    publicId: "3",
-                    username: "SilentWave",
-                },
-                {
-                    color: null,
-                    isAdmin: false,
-                    isReady: true,
-                    publicId: "4",
-                    username: "IronShadow",
-                },
-                {
-                    color: {
-                        hex: "#f97316",
-                        name: "orange",
-                    },
-                    isAdmin: false,
-                    isReady: true,
-                    publicId: "5",
-                    username: "CrimsonFox",
-                },
-            ],
-        };
-        // Jak będzie prawdziwy event z danymi to można usunąć request animation frame
-        requestAnimationFrame(() => {
-            store.setLoading(false);
-        });
-    }, 500);
-
     store.socket.on("lobbyData", (lobbyData) => {
+        console.log("Lobby data: ", lobbyData);
         data.value = lobbyData;
-        toggleReadyDisabled.value = false;
+        store.setLoading(false);
     });
+
+    store.emit("lobbyDataRequest");
+});
+
+onUnmounted(() => {
+    store.socket.off("lobbyData");
 });
 </script>
 
@@ -121,6 +41,7 @@ onMounted(() => {
             <TopLeftPanel
                 :game-data="data.gameData"
                 :current-user="currentUser"
+                :available-colors="data.availableColors"
             />
             <TopCenterPanel :username="currentUser.username" />
             <TopRightPanel

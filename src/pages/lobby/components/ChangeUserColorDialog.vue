@@ -20,12 +20,13 @@ defineExpose({
 const colorsToChoose = computed(() => {
     return props.availableColors.filter(
         (color) =>
-            props.currentUser.color &&
+            !props.currentUser.color ||
             color.name !== props.currentUser.color.name,
     );
 });
 
 const changeUserColor = (color) => {
+    console.log(color);
     store.emit("changeUserColor", {
         newColor: color,
     });
@@ -42,7 +43,7 @@ const changeUserColor = (color) => {
                 v-for="color in colorsToChoose"
                 :key="color.name"
                 class="colorWrap"
-                @click="() => changeUserColor(color.name)"
+                @click="() => changeUserColor(color)"
             >
                 <div class="color" :style="`background-color: ${color.hex}`" />
             </div>
