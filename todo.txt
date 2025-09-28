@@ -1,2 +1,0 @@
-1. Każdy page ma mieć swój css
-2. w indexie tylko naprawdę BARDZO globalne style

@@ -21,11 +21,21 @@ const toggleReadyDisabled = ref(false);
 
 const store = useAppStore();
 
-const toggleReady = () => {
-    if (toggleReadyDisabled.value) return;
+const blockButtons = () => {
+    if (toggleReadyDisabled.value) return true;
     toggleReadyDisabled.value = true;
-    store.emit("toggleReady");
     setTimeout(() => (toggleReadyDisabled.value = false), 300);
+    return false;
+};
+
+const toggleReady = () => {
+    if (blockButtons()) return;
+    store.emit("toggleReady");
+};
+
+const handleGameStart = () => {
+    if (blockButtons()) return;
+    store.emit("gameStart");
 };
 </script>
 
@@ -70,7 +80,7 @@ const toggleReady = () => {
             :disabled="readyUsers < props.gameData.maxPlayers"
             :icon="Start"
             content="Zacznij grę"
-            @click="() => console.log('Start')"
+            @click="handleGameStart"
         />
     </div>
 </template>

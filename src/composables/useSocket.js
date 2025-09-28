@@ -10,8 +10,8 @@ export default function useSocket() {
     const router = useRouter();
     const route = useRoute();
     const toast = useToast();
-    // const socket = io("http://localhost:3000");
-    const socket = io("http://100.105.85.19:3000");
+    const socket = io("http://localhost:3000");
+    // const socket = io("http://100.105.85.19:3000");
 
     let userId = getUserId();
 
