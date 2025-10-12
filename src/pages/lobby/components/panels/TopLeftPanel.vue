@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 import Cancel from "@/assets/cancel.svg";
 import Color from "@/assets/color.svg";
@@ -12,7 +12,7 @@ import ChangeUserColorDialog from "../ChangeUserColorDialog.vue";
 import ChangeUsernameDialog from "../ChangeUsernameDialog.vue";
 import OptionButton from "../OptionButton.vue";
 
-const props = defineProps(["currentUser", "gameData", "availableColors"]);
+const props = defineProps(["currentUser", "gameData", "availableColors", "lobbyUsers"]);
 
 const changeUsernameDialogRef = ref(null);
 const changeUserColorDialogRef = ref(null);
@@ -33,8 +33,28 @@ const toggleReady = () => {
     store.emit("toggleReady");
 };
 
+const areColorDuplicatedOrNotSelected = computed(() => {
+    const usedColors = []
+    for (const user of props.lobbyUsers) {
+        if (!user.color || usedColors.includes(user.color.name)) return true;
+        usedColors.push(user.color.name);
+    }
+    return false;
+})
+
+const areUsersReady = computed(() => {
+    return props.lobbyUsers.every(user => user.isAdmin || user.isReady)
+})
+
+const canStartTheGame = computed(() => {
+    if (blockButtons()) return false;
+    if (areColorDuplicatedOrNotSelected.value) return false;
+    if (!areUsersReady.value) return false;
+    return true;
+})
+
 const handleGameStart = () => {
-    if (blockButtons()) return;
+    if (!canStartTheGame.value) return;
     store.emit("gameStart");
 };
 </script>
@@ -49,6 +69,7 @@ const handleGameStart = () => {
         <ChangeUserColorDialog
             ref="changeUserColorDialogRef"
             :current-user="props.currentUser"
+            :lobby-users="props.lobbyUsers"
             :available-colors="props.availableColors"
         />
 
@@ -71,13 +92,13 @@ const handleGameStart = () => {
 
         <OptionButton
             :icon="Color"
-            content="Zmień kolor"
+            :content="props.currentUser.color ? 'Zmień kolor' : 'Wybierz kolor'"
             @click="changeUserColorDialogRef?.openDialog"
         />
-
+<!--   :disabled="readyUsers < props.gameData.maxPlayers" -->
         <OptionButton
             v-if="props.currentUser.isAdmin"
-            :disabled="readyUsers < props.gameData.maxPlayers"
+          
             :icon="Start"
             content="Zacznij grę"
             @click="handleGameStart"

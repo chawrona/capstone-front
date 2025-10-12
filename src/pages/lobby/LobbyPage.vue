@@ -22,7 +22,6 @@ onMounted(() => {
     store.setLoading(true);
 
     store.socket.on("lobbyData", (lobbyData) => {
-        console.log("Lobby data: ", lobbyData);
         data.value = lobbyData;
         store.setLoading(false);
     });
@@ -30,8 +29,8 @@ onMounted(() => {
     store.emit("lobbyDataRequest");
 });
 
-onUnmounted(() => {
-    store.socket.off("lobbyData");
+onUnmounted(() => { 
+    if (store.socket) store.socket.off("lobbyData");
 });
 </script>
 
@@ -40,6 +39,7 @@ onUnmounted(() => {
         <main v-if="data" class="container">
             <TopLeftPanel
                 :game-data="data.gameData"
+                :lobby-users="data.lobbyUsers"
                 :current-user="currentUser"
                 :available-colors="data.availableColors"
             />

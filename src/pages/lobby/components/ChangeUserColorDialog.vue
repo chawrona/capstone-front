@@ -3,7 +3,7 @@ import { computed, ref } from "vue";
 
 import { useAppStore } from "../../../store/useAppStore";
 
-const props = defineProps(["availableColors", "currentUser"]);
+const props = defineProps(["availableColors", "currentUser", "lobbyUsers"]);
 
 const store = useAppStore();
 
@@ -17,16 +17,14 @@ defineExpose({
     openDialog,
 });
 
-const colorsToChoose = computed(() => {
-    return props.availableColors.filter(
-        (color) =>
-            !props.currentUser.color ||
-            color.name !== props.currentUser.color.name,
-    );
+const blockedColors = computed(() => {
+    return props.lobbyUsers.filter(user => user.color).map((user) => user.color.name);
 });
 
 const changeUserColor = (color) => {
-    console.log(color);
+
+    if (blockedColors.value.includes(color.name)) return
+
     store.emit("changeUserColor", {
         newColor: color,
     });
@@ -40,9 +38,10 @@ const changeUserColor = (color) => {
 
         <div class="availableColors">
             <div
-                v-for="color in colorsToChoose"
+                v-for="color in availableColors"
                 :key="color.name"
                 class="colorWrap"
+                :class="{'disabledColor': blockedColors.includes(color.name)}"
                 @click="() => changeUserColor(color)"
             >
                 <div class="color" :style="`background-color: ${color.hex}`" />
@@ -83,6 +82,10 @@ const changeUserColor = (color) => {
 
     .colorWrap {
         padding: 0.5rem;
+    }
+
+    .colorWrap:not(.disabledColor) {
+        padding: 0.5rem;
         cursor: pointer;
 
         &:hover .color {
@@ -98,5 +101,10 @@ const changeUserColor = (color) => {
         border-radius: 50%;
         box-shadow: 1px 1px 3px 3px rgb(0, 0, 0);
     }
+}
+
+.disabledColor {
+    opacity: 0.25;
+    cursor: not-allowed;
 }
 </style>

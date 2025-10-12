@@ -20,7 +20,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    store.socket.off("error");
+    if (store.socket) store.socket.off("error");
 });
 
 const createLobby = () => {

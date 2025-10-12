@@ -13,7 +13,8 @@ const readyUsers = computed(
     <div class="panel top-right">
         <p class="theme-title ready-count">
             <span>Gotowi </span>
-            <span>{{ `(${readyUsers}/${props.gameData.maxPlayers})` }}</span>
+            <!-- <span>{{ `(${readyUsers}/${props.gameData.maxPlayers})` }}</span> -->
+            <span>{{ `(${readyUsers}/${10})` }}</span>
         </p>
 
         <ul class="lobby-users">
