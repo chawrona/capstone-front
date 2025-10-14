@@ -49,7 +49,8 @@ export default function useSocket() {
     });
 
     socket.on("game", (data) => {
-        router.push(`/${data.lobbyId}/${data.game}`);
+        store.setLoading(true);
+        router.push(`/${data.lobbyId}/${data.gameTitle}`);
     });
 
     socket.on("error", (payload) => {

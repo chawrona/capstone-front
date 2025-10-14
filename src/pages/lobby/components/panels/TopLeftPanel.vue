@@ -72,18 +72,7 @@ const handleGameStart = () => {
             :lobby-users="props.lobbyUsers"
             :available-colors="props.availableColors"
         />
-
-        <OptionButton
-            v-if="!props.currentUser.isAdmin"
-            :icon="!props.currentUser.isReady ? Ready : Cancel"
-            :content="
-                !props.currentUser.isReady
-                    ? 'Jestem gotowy(-a)'
-                    : 'Anuluj gotowość'
-            "
-            @click="toggleReady"
-        />
-
+  
         <OptionButton
             :icon="Edit"
             content="Zmień pseudonim"
@@ -95,6 +84,19 @@ const handleGameStart = () => {
             :content="props.currentUser.color ? 'Zmień kolor' : 'Wybierz kolor'"
             @click="changeUserColorDialogRef?.openDialog"
         />
+
+         <OptionButton
+            v-if="!props.currentUser.isAdmin"
+            :icon="!props.currentUser.isReady ? Ready : Cancel"
+            :content="
+                !props.currentUser.isReady
+                    ? 'Jestem gotowy(-a)'
+                    : 'Anuluj gotowość'
+            "
+            @click="toggleReady"
+        />
+
+
 <!--   :disabled="readyUsers < props.gameData.maxPlayers" -->
         <OptionButton
             v-if="props.currentUser.isAdmin"

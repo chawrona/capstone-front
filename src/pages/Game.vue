@@ -19,6 +19,10 @@ onMounted(() => {
         store.socket.on("gameData", (data) => {
             console.log("game: " + JSON.stringify(data));
             gameData.value = data;
+
+            setTimeout(() => {
+                store.setLoading(false);
+            }, 1000)
         });
 
         store.socket.on("hello", (data) => {
@@ -29,6 +33,14 @@ onMounted(() => {
             console.log("wood: " + data);
             alert("Aktualna ilość Twojego drewna: " + data);
         });
+
+        console.log("GameData");
+        
+        store.emit("gameData", {
+            eventName: "gameDataRequest"
+        });
+
+        console.log("Requested");
     }
 });
 
