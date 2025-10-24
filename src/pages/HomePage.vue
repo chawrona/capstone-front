@@ -1,6 +1,8 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from "vue";
 
+import Music from "@/assets/music.svg";
+
 import { useAppStore } from "../store/useAppStore";
 
 const store = useAppStore();
@@ -12,15 +14,17 @@ const blockEverything = computed(
     () => awaitingCreateLobby.value || awaitingJoinLobby.value,
 );
 
+const hangleSocketError = () => {
+    awaitingCreateLobby.value = false;
+    awaitingJoinLobby.value = false;
+};
+
 onMounted(() => {
-    store.socket.on("error", () => {
-        awaitingCreateLobby.value = false;
-        awaitingJoinLobby.value = false;
-    });
+    store.socket.on("error", hangleSocketError);
 });
 
 onUnmounted(() => {
-    if (store.socket) store.socket.off("error");
+    if (store.socket) store.socket.off("error", hangleSocketError);
 });
 
 const createLobby = () => {
@@ -57,7 +61,7 @@ const joinLobby = () => {
                         v-model="lobbyId"
                         type="text"
                         maxlength="6"
-                        placeholder="#cR4ak8"
+                        placeholder="Wprowadź kod pokoju"
                         class="theme-input"
                         :disabled="blockEverything"
                     />
@@ -71,6 +75,9 @@ const joinLobby = () => {
                 </form>
             </div>
         </main>
+        <button class="theme-button sound-button">
+            <img :src="Music" alt="" />
+        </button>
     </div>
 </template>
 
@@ -126,6 +133,16 @@ const joinLobby = () => {
 
 .theme-button {
     font-size: 13px;
+}
+
+.sound-button {
+    position: fixed;
+    right: 2rem;
+    padding: 0.75rem;
+    bottom: 2rem;
+    img {
+        width: 1.25rem;
+    }
 }
 
 @media (width > 400px) {

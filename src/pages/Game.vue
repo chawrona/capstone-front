@@ -22,7 +22,7 @@ onMounted(() => {
 
             setTimeout(() => {
                 store.setLoading(false);
-            }, 1000)
+            }, 1000);
         });
 
         store.socket.on("hello", (data) => {
@@ -35,9 +35,9 @@ onMounted(() => {
         });
 
         console.log("GameData");
-        
+
         store.emit("gameData", {
-            eventName: "gameDataRequest"
+            eventName: "gameDataRequest",
         });
 
         console.log("Requested");

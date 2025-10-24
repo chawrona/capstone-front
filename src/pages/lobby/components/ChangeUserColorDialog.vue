@@ -2,8 +2,14 @@
 import { computed, ref } from "vue";
 
 import { useAppStore } from "../../../store/useAppStore";
+import DialogHeader from "./panels/DialogHeader.vue";
 
-const props = defineProps(["availableColors", "currentUser", "lobbyUsers"]);
+const props = defineProps([
+    "availableColors",
+    "currentUser",
+    "lobbyUsers",
+    "userColor",
+]);
 
 const store = useAppStore();
 
@@ -18,93 +24,143 @@ defineExpose({
 });
 
 const blockedColors = computed(() => {
-    return props.lobbyUsers.filter(user => user.color).map((user) => user.color.name);
+    return props.lobbyUsers
+        .filter((user) => user.color)
+        .map((user) => user.color.name);
 });
 
-const changeUserColor = (color) => {
+const userColor = computed(() => props.userColor && props.userColor.name);
 
-    if (blockedColors.value.includes(color.name)) return
-
-    store.emit("changeUserColor", {
-        newColor: color,
-    });
+const changeUserColor = (newColor) => {
+    if (blockedColors.value.includes(newColor.name)) return;
+    store.emit("changeUserColor", { newColor });
     closeDialog();
 };
+
+const dialogTitle = computed(() => {
+    return userColor.value ? "Zmień kolor" : "Wybierz kolor";
+});
 </script>
 
 <template>
-    <dialog ref="dialogRef" class="theme-dialog changeUserColorDialog">
-        <h1>Zmień kolor</h1>
-
-        <div class="availableColors">
-            <div
+    <dialog ref="dialogRef" class="theme-dialog change-user-color-dialog">
+        <DialogHeader
+            :title="dialogTitle"
+            :close-dialog-callback="closeDialog"
+        />
+        <div class="available-colors">
+            <button
                 v-for="color in availableColors"
                 :key="color.name"
-                class="colorWrap"
-                :class="{'disabledColor': blockedColors.includes(color.name)}"
+                class="change-color-btn"
+                :class="{
+                    'disabled-color': blockedColors.includes(color.name),
+                }"
+                :data-player-color="userColor === color.name"
                 @click="() => changeUserColor(color)"
             >
-                <div class="color" :style="`background-color: ${color.hex}`" />
-            </div>
+                <div class="color" :style="`--color: ${color.hex}; `">
+                    <div class="color-name">
+                        {{ color.name }}
+                    </div>
+                </div>
+            </button>
         </div>
-
-        <button class="theme-button closeDialog" @click="closeDialog">
-            Zamknij
-        </button>
     </dialog>
 </template>
 
 <style scoped>
-.changeUserColorDialog {
-    width: 375px;
+.change-user-color-dialog {
+    position: relative;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 462px;
+    max-width: calc(100% - 2rem);
 
     &[open] {
         display: flex;
     }
+}
 
-    h1 {
-        font-family: "Cinzel";
-        font-size: 1.75rem;
-        width: 100%;
-    }
-    flex-direction: column;
-    gap: 0.5rem;
+.available-colors {
+    gap: 1.5rem 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+    justify-content: start;
+}
 
-    .closeDialog {
-        margin-top: 1rem;
+.change-color-btn {
+    border: none;
+    background-color: transparent;
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+
+    .color:hover .color-name {
+        background-color: transparent;
     }
 }
 
-.availableColors {
-    display: flex;
-    justify-content: space-around;
-    gap: 0.5rem;
+.disabled-color {
+    opacity: 0.4;
+    cursor: auto;
 
-    .colorWrap {
-        padding: 0.5rem;
+    &[data-player-color="true"] {
+        opacity: 1;
     }
 
-    .colorWrap:not(.disabledColor) {
-        padding: 0.5rem;
-        cursor: pointer;
+    .color .color-name {
+        background-color: transparent;
+    }
+}
 
-        &:hover .color {
-            filter: brightness(0.75);
+.color {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 7em;
+    height: 2.35rem;
+    border-radius: 3px;
+    color: #ffffff;
+    box-shadow: -1px 1px 2px 2px rgba(0, 0, 0, 0.582);
+    background: linear-gradient(
+        135deg,
+        var(--color),
+        hsl(from var(--color) h s calc(l * 0.5))
+    );
+    letter-spacing: normal;
+    user-select: none;
+
+    .color-name {
+        width: calc(100% - 4px);
+        height: calc(100% - 4px);
+        border-radius: 3px;
+        display: grid;
+        place-items: center;
+        background-color: black;
+        font-weight: bold;
+    }
+}
+
+@media (width < 358px) {
+    .change-user-color-dialog {
+        .dialog-title {
+            font-size: 1.09rem;
+        }
+
+        .close-dialog {
+            width: 2.5rem;
+        }
+
+        .close-icon {
+            width: 1.5rem;
         }
     }
 
-    .color {
-        width: 2em;
-        padding: 0.75rem;
-        height: 2rem;
-        background-color: red;
-        border-radius: 50%;
-        box-shadow: 1px 1px 3px 3px rgb(0, 0, 0);
+    .available-colors {
+        flex-direction: column;
+        align-items: center;
     }
-}
-
-.disabledColor {
-    opacity: 0.25;
-    cursor: not-allowed;
 }
 </style>

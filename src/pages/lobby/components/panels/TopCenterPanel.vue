@@ -11,7 +11,7 @@ const props = defineProps(["username"]);
 <style scoped>
 .top-center {
     font-family: "Cinzel";
-    color: #f5eac6;
+    color: #ffffff;
 
     top: 0;
     font-size: 1.5rem;

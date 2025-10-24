@@ -57,7 +57,7 @@ export default function useSocket() {
         if (payload) {
             toast.error(payload.error, {
                 duration: 4000,
-                position: "top-left",
+                position: "top",
                 type: "error",
             });
         }

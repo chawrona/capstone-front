@@ -37,6 +37,8 @@ const copyUrl = async () => {
     text-align: right;
     padding: 0.25rem;
     border-radius: 4px;
+    font-family: serif;
+    letter-spacing: 0.04rem;
 }
 
 .lobby-code:hover {

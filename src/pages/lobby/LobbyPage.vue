@@ -18,6 +18,12 @@ const currentUser = computed(() =>
     ),
 );
 
+const readyUsers = computed(
+    () =>
+        data.value.lobbyUsers.filter((user) => user.isReady || user.isAdmin)
+            .length,
+);
+
 onMounted(() => {
     store.setLoading(true);
 
@@ -29,7 +35,7 @@ onMounted(() => {
     store.emit("lobbyDataRequest");
 });
 
-onUnmounted(() => { 
+onUnmounted(() => {
     if (store.socket) store.socket.off("lobbyData");
 });
 </script>
@@ -38,15 +44,17 @@ onUnmounted(() => {
     <div class="app-container">
         <main v-if="data" class="container">
             <TopLeftPanel
-                :game-data="data.gameData"
+                :current-game="data.currentGame"
                 :lobby-users="data.lobbyUsers"
                 :current-user="currentUser"
+                :ready-users="readyUsers"
                 :available-colors="data.availableColors"
             />
             <TopCenterPanel :username="currentUser.username" />
             <TopRightPanel
                 :current-user="currentUser"
-                :game-data="data.gameData"
+                :current-game="data.currentGame"
+                :ready-users="readyUsers"
                 :lobby-users="data.lobbyUsers"
             />
             <BottomLeftPanel

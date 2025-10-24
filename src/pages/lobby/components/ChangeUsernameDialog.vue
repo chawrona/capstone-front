@@ -2,6 +2,7 @@
 import { ref } from "vue";
 
 import { useAppStore } from "../../../store/useAppStore";
+import DialogHeader from "./panels/DialogHeader.vue";
 
 const props = defineProps(["username"]);
 
@@ -29,13 +30,17 @@ const changeUsername = () => {
 </script>
 
 <template>
-    <dialog ref="dialogRef" class="theme-dialog changeUsernameDialog">
-        <h1>Zmień pseudonim</h1>
-        <div class="inputWrap">
+    <dialog ref="dialogRef" class="theme-dialog change-username-dialog">
+        <DialogHeader
+            title="Zmień pseudonim"
+            :close-dialog-callback="closeDialog"
+        />
+
+        <div class="input-wrap">
             <input
                 v-model="changeUsernameInput"
                 type="text"
-                class="theme-input changeUsernameInput"
+                class="theme-input change-username-input"
                 :placeholder="username"
                 minlength="3"
                 maxlength="20"
@@ -43,39 +48,80 @@ const changeUsername = () => {
             />
             <button class="theme-button" @click="changeUsername">Zmień</button>
         </div>
-        <button class="theme-button closeDialog" @click="closeDialog">
-            Zamknij
-        </button>
     </dialog>
 </template>
 
 <style scoped>
-.changeUsernameDialog {
-    .inputWrap {
-        display: flex;
-        gap: 0.5rem;
-    }
+.change-username-dialog {
+    display: none;
+    flex-direction: column;
+    gap: 0.85rem;
+    width: 485px;
+    max-width: calc(100% - 2rem);
 
-    width: 455px;
     &[open] {
         display: flex;
     }
 
-    flex-direction: column;
-    gap: 0.85rem;
-    h1 {
+    .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .dialog-title {
         font-family: "Cinzel";
         font-size: 1.75rem;
         width: 100%;
     }
 
-    .closeDialog {
-        margin-top: 0.25rem;
+    .input-wrap {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .close-dialog {
+        padding: 0;
+        display: grid;
+        place-items: center;
+        width: 2.5rem;
+        aspect-ratio: 1 / 1;
+        background-image: none;
+        background-color: transparent;
+        border: none;
+        backdrop-filter: unset;
+        flex-shrink: 0;
+        transform: translateX(10px);
+
+        &:hover {
+            background-image: none;
+            background-color: #ffffff25;
+        }
+    }
+
+    .close-icon {
+        width: 2rem;
     }
 }
 
-.changeUsernameInput {
+.change-username-input {
     letter-spacing: 1.5px;
     font-size: 1rem;
+}
+
+@media (width < 500px) {
+    .change-username-dialog {
+        .input-wrap {
+            flex-direction: column;
+        }
+
+        .dialog-title {
+            font-size: 1.09rem;
+        }
+
+        .close-icon {
+            width: 1.5rem;
+        }
+    }
 }
 </style>

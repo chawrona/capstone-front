@@ -1,26 +1,27 @@
+user-color
 <script setup>
-import { computed } from "vue";
+import ReadyWhite from "@/assets/ReadyWhite.svg";
 
-const props = defineProps(["currentUser", "gameData", "lobbyUsers"]);
-
-const readyUsers = computed(
-    () =>
-        props.lobbyUsers.filter((user) => user.isReady || user.isAdmin).length,
-);
+const props = defineProps([
+    "currentUser",
+    "readyUsers",
+    "currentGame",
+    "lobbyUsers",
+]);
 </script>
 
 <template>
     <div class="panel top-right">
         <p class="theme-title ready-count">
             <span>Gotowi </span>
-            <!-- <span>{{ `(${readyUsers}/${props.gameData.maxPlayers})` }}</span> -->
-            <span>{{ `(${readyUsers}/${10})` }}</span>
+            <span>{{ `(${readyUsers}/${props.currentGame.maxPlayers})` }}</span>
         </p>
 
         <ul class="lobby-users">
             <li
                 v-for="user in props.lobbyUsers"
                 :key="user.publicId"
+                :style="`--color: ${user.color ? user.color.hex : '#868686'}`"
                 :class="{
                     'lobby-user': props.currentUser !== user.publicId,
                     'current-user': props.currentUser === user.publicId,
@@ -28,17 +29,20 @@ const readyUsers = computed(
                 }"
             >
                 {{ user.username }}
-                <span
-                    class="userColor"
-                    :style="`background-color: ${user.color ? user.color.hex : '#242323'}`"
-                >
+                <span class="user-color">
+                    <img
+                        v-show="user.isReady || user.isAdmin"
+                        :src="ReadyWhite"
+                        class="ready-icon"
+                        alt=""
+                    />
                 </span>
             </li>
         </ul>
     </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .top-right {
     top: 0;
     right: 0;
@@ -52,48 +56,60 @@ const readyUsers = computed(
 
 .ready-count {
     text-align: right;
-    font-size: 1.25rem;
+    font-size: 1.15rem;
+    transform: translateX(1.5rem);
     font-family: "Cinzel";
 }
 
 .lobby-users {
     text-align: right;
     list-style: none;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
+    letter-spacing: 0.02em;
 
     li {
+        font-weight: bold;
         position: relative;
+        color: hsl(from var(--color) h s calc(l * 1.2));
+
+        @media (width < 768px) {
+            text-align: center;
+        }
     }
 
-    .userColor {
+    .lobby-user {
+        font-weight: 600;
+        opacity: 0.6;
+    }
+
+    .user-color {
         position: absolute;
-        content: "";
-        height: 40%;
+        display: block;
+
+        height: 60%;
         top: 50%;
-        transform: translate(150%, -70%);
+        transform: translate(150%, -55%);
         right: 0;
-        border-radius: 50%;
         aspect-ratio: 1 / 1;
+        background: linear-gradient(
+            135deg,
+            var(--color),
+            hsl(from var(--color) h s calc(l * 0.5))
+        );
     }
-}
 
-.lobby-user {
-    color: #ffffff;
-    opacity: 0.5;
-    font-weight: 600;
-
-    @media (width < 768px) {
-        text-align: center;
+    .ready {
+        opacity: 1;
     }
-}
 
-.current-user {
-    color: #f5eac6;
-    opacity: 0.5;
-    font-weight: 600;
-}
-
-.ready {
-    opacity: 1;
+    .ready-icon {
+        display: block;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 130%;
+        max-width: none;
+    }
 }
 </style>

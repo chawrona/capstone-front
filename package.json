@@ -7,8 +7,10 @@
     "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
-    "format": "prettier --write '**/*.{css,scss}'",
-    "format-test": "eslint . --fix && stylelint '**/*.{scss}' --fix"
+    "prettier": "prettier --write '**/*.{css,scss}'",
+    "eslint": "eslint . --fix",
+    "stylelint": "npx stylelint \"**/*.scss\" --fix",
+    "format": "npm run eslint && npm run prettier && npm run stylelint"
   },
   "dependencies": {
     "pinia": "^3.0.3",
