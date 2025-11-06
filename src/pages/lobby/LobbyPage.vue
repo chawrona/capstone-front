@@ -4,6 +4,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useAppStore } from "../../store/useAppStore";
 import BottomLeftPanel from "./components/panels/BottomLeftPanel.vue";
 import BottomRightPanel from "./components/panels/BottomRightPanel.vue";
+import CenterPanel from "./components/panels/CenterPanel.vue";
 import TopCenterPanel from "./components/panels/TopCenterPanel.vue";
 import TopLeftPanel from "./components/panels/TopLeftPanel.vue";
 import TopRightPanel from "./components/panels/TopRightPanel.vue";
@@ -48,9 +49,15 @@ onUnmounted(() => {
                 :lobby-users="data.lobbyUsers"
                 :current-user="currentUser"
                 :ready-users="readyUsers"
+                :available-games="data.availableGames"
                 :available-colors="data.availableColors"
             />
             <TopCenterPanel :username="currentUser.username" />
+            <CenterPanel
+                :available-games="data.availableGames"
+                :current-game="data.currentGame"
+                :is-admin="currentUser.isAdmin"
+            />
             <TopRightPanel
                 :current-user="currentUser"
                 :current-game="data.currentGame"
@@ -94,8 +101,6 @@ onUnmounted(() => {
 
     @media (width < 768px) {
         position: relative;
-        display: flex;
-        flex-direction: column;
         align-items: center;
         padding: 0.5rem;
     }

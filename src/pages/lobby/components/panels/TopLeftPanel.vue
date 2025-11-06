@@ -19,6 +19,7 @@ const props = defineProps([
     "readyUsers",
     "availableColors",
     "lobbyUsers",
+    "availableGames",
 ]);
 
 const toast = useToast();

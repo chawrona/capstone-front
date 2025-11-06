@@ -13,7 +13,7 @@ const props = defineProps([
 <template>
     <div class="panel top-right">
         <p class="theme-title ready-count">
-            <span>Gotowi </span>
+            <span class="count-description">Gotowi </span>
             <span>{{ `(${readyUsers}/${props.currentGame.maxPlayers})` }}</span>
         </p>
 
@@ -50,6 +50,11 @@ const props = defineProps([
     @media (width < 768px) {
         .top-right {
             order: 3;
+        }
+
+        .ready-count {
+            text-align: center;
+            transform: none;
         }
     }
 }

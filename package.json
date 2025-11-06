@@ -10,7 +10,7 @@
     "prettier": "prettier --write '**/*.{css,scss}'",
     "eslint": "eslint . --fix",
     "stylelint": "npx stylelint \"**/*.scss\" --fix",
-    "format": "npm run eslint && npm run prettier && npm run stylelint"
+    "fix": "npm run eslint && npm run prettier && npm run stylelint"
   },
   "dependencies": {
     "pinia": "^3.0.3",

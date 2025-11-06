@@ -12,6 +12,10 @@ body {
   min-height: 100vh;
 }
 
+body:has([open]) {
+  overflow-y: hidden;
+}
+
 img,
 picture,
 svg,
