@@ -110,10 +110,6 @@ const changeGame = (gameTitle) => {
             rgba(9, 0, 0, 0.8) 50%,
             rgba(13, 11, 0, 0.8) 100%
         );
-
-        @media (width < 768px) {
-            background: #000;
-        }
     }
 
     &[open] {
@@ -244,17 +240,28 @@ const changeGame = (gameTitle) => {
         height: auto;
     }
 
-    .game-info-wrapper {
-        position: relative;
-        .game-info {
-            gap: 0.5rem;
-            flex-direction: column;
+    .boardgame-image {
+        .game-info-wrapper {
+                background-color: #000;
+                position: relative;
+                .game-info {
+                    gap: 0.5rem;
+                    flex-direction: column;
+                }
+            }
+
+        .game-bgImage {
+            position: relative;
         }
     }
 
-    .game-bgImage {
-        position: relative;
+    .boardgame-image:hover {
+        .game-info-wrapper[data-choosing="true"] {
+            background-color: hsl(39, 77%, 3%);
+        }
     }
+
+   
 }
 
 @media (width < 500px) {

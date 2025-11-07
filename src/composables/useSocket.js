@@ -45,12 +45,17 @@ export default function useSocket() {
     });
 
     socket.on("lobby", (lobbyId) => {
-        router.push(`/${lobbyId}`);
+        store.setLoading(true);
+        setTimeout(() => {
+            router.push(`/${lobbyId}`);
+        }, 1000);
     });
 
     socket.on("game", (data) => {
         store.setLoading(true);
-        router.push(`/${data.lobbyId}/${data.gameTitle}`);
+        setTimeout(() => {
+            router.push(`/${data.lobbyId}/${data.gameTitle}`);
+        }, 3000);
     });
 
     socket.on("error", (payload) => {

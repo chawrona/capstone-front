@@ -26,8 +26,6 @@ const readyUsers = computed(
 );
 
 onMounted(() => {
-    store.setLoading(true);
-
     store.socket.on("lobbyData", (lobbyData) => {
         data.value = lobbyData;
         store.setLoading(false);

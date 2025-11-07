@@ -2,6 +2,7 @@
 import { onMounted, onBeforeUnmount, ref, computed } from "vue";
 
 import { useAppStore } from "@/store/useAppStore.js";
+import setGameData from "../composables/setGameData";
 
 const store = useAppStore();
 
@@ -16,14 +17,7 @@ const addedWood = computed(() => {
 
 onMounted(() => {
     if (store.socket) {
-        store.socket.on("gameData", (data) => {
-            console.log("game: " + JSON.stringify(data));
-            gameData.value = data;
-
-            setTimeout(() => {
-                store.setLoading(false);
-            }, 1000);
-        });
+        store.socket.on("gameData", (d) => setGameData(d, gameData));
 
         store.socket.on("hello", (data) => {
             alert(data);
