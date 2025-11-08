@@ -7,10 +7,12 @@ import setGameData from "../composables/setGameData";
 const store = useAppStore();
 
 const gameData = ref(null);
+const players = ref(null);
 
 onMounted(() => {
     if (store.socket) {
         store.socket.on("gameData", (d) => setGameData(d, gameData));
+        store.socket.on("players", (d) => players.value = d);
 
         store.emit("gameData", {
             eventName: "gameDataRequest",
@@ -21,6 +23,25 @@ onMounted(() => {
 onBeforeUnmount(() => {
     store.socket.off("gameData");
 });
+
+const rollDice = () => {
+    store.emit("gameData", {
+        eventName: "rollDice"
+    });
+};
+
+const inputRef = ref(null)
+
+const pawnMovement = () => {
+    store.emit("gameData", {
+        eventName: "pawnMovement",
+        data: {
+            pawnId: inputRef.value
+        }
+    });
+
+    inputRef.value = 0
+};
 </script>
 
 
@@ -50,11 +71,24 @@ type Players = {publicId: string, username: string, color: Color, ...data: {[key
 -->
 
 <template>
-    <h1>Chińczyk</h1>
-    <div class="game">
-        Tu będzie mapa
+    <div v-if="gameData">
+        <h1>Chińczyk</h1>
+        <h2>Aktualny gracz: {{ players[gameData[currentPlayerIndex]] }}</h2>
+        <h2>Czy Twoja tura? {{ gameData[yourTurn] ? "Tak" : "Nie" }}</h2>
+        <button @click="rollDice">Rzuć kością</button>
+        <p>Pawns:</p>
+        {{ gameData[possiblePawnMoves] }}
+        <p>Pawn id do wysłania:</p>
+        <input type="number" ref="inputRef"/>
+        <button @click="pawnMovement">Wybierz pionek</button>
+        <div class="game">
+            
+            <pre>
+                {{ gameData }}
+            </pre>
+        </div>
+        
     </div>
-    <button @click="rollDice">Rzuć kością</button>
 </template>
 
 <style lang="scss" scoped>
