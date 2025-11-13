@@ -30,17 +30,13 @@ const rollDice = () => {
     });
 };
 
-const inputRef = ref(null)
+const number = ref(null)
 
 const pawnMovement = () => {
     store.emit("gameData", {
         eventName: "pawnMovement",
-        data: {
-            pawnId: inputRef.value
-        }
+        pawnId: number.value
     });
-
-    inputRef.value = 0
 };
 </script>
 
@@ -73,13 +69,13 @@ type Players = {publicId: string, username: string, color: Color, ...data: {[key
 <template>
     <div v-if="gameData">
         <h1>Chińczyk</h1>
-        <h2>Aktualny gracz: {{ players[gameData[currentPlayerIndex]] }}</h2>
-        <h2>Czy Twoja tura? {{ gameData[yourTurn] ? "Tak" : "Nie" }}</h2>
+        <h2>Aktualny gracz: {{ players[gameData["currentPlayerIndex"]] }}</h2>
+        <h2>Czy Twoja tura? {{ gameData["yourTurn"] ? "Tak" : "Nie" }}</h2>
         <button @click="rollDice">Rzuć kością</button>
         <p>Pawns:</p>
         {{ gameData[possiblePawnMoves] }}
         <p>Pawn id do wysłania:</p>
-        <input type="number" ref="inputRef"/>
+        <input type="number" v-model="number"/>
         <button @click="pawnMovement">Wybierz pionek</button>
         <div class="game">
             
