@@ -1,5 +1,9 @@
 // Ogólne
 
+.v-toast {
+  padding: 1rem;
+}
+
 .v-toast__item .v-toast__text {
   padding: 0.75em 2em;
   padding-left: 1.25em;
@@ -8,6 +12,7 @@
 
 .v-toast__item {
   animation-duration: 0.75s;
+
   min-height: 3.5rem;
 }
 
@@ -41,6 +46,8 @@
 .v-toast__item--error {
   border: 1px solid #ffffff;
   background-color: #470303;
+  background-image: url("../assets/errorBg.png");
+  background-size: cover;
   border-radius: 4px;
   color: #ffffff;
   font-family: "Cinzel";
@@ -66,6 +73,8 @@
 .v-toast__item--info {
   border: 1px solid #ffffff;
   background-color: #064b70; /* ciemny niebieski */
+  background-image: url("../assets/infoBg.png");
+  background-size: cover;
   border-radius: 4px;
   color: #ffffff;
   font-family: "Cinzel";

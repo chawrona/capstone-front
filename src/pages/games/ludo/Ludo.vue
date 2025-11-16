@@ -1,7 +1,9 @@
 <script setup>
-import { onMounted, onBeforeUnmount, ref, computed } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
+import Start from "@/assets/start_white.svg";
 import { useAppStore } from "@/store/useAppStore.js";
+
 import setGameData from "../composables/setGameData";
 
 const store = useAppStore();
@@ -9,87 +11,533 @@ const store = useAppStore();
 const gameData = ref(null);
 const players = ref(null);
 
+const mapBases = computed(() => {
+    const noPlayer = {
+        color: {
+            hex: "#919190",
+            name: "gray",
+        },
+    };
+
+    const bases = [];
+
+    // Robimy po kolei tablicę według startingField
+    for (let i = 0; i < 4; i++) {
+        const player = players.value.find(
+            (player) => player["startingField"] === i * 10,
+        );
+        if (!player) {
+            bases.push({ ...noPlayer, startingField: i * 10 });
+        } else {
+            bases.push({ ...player });
+        }
+    }
+
+    const playerIndex = bases.findIndex(
+        (p) => p.publicId === gameData.value.yourPublicId,
+    );
+
+    if (playerIndex === -1) return bases;
+
+    const rotations =
+        playerIndex === 0
+            ? 2
+            : playerIndex === 1
+              ? 1
+              : playerIndex === 2
+                ? 0
+                : 3;
+
+    console.log(
+        "ROTACJA: ",
+        rotations,
+        "TUTAJ: ",
+        bases,
+        bases.slice(-rotations).concat(bases.slice(0, -rotations)),
+    );
+
+    return bases.slice(-rotations).concat(bases.slice(0, -rotations));
+});
+
+const BASE_WIDTH = 1920;
+const BASE_HEIGHT = 950;
+const scale = ref(1);
+
+const resizeGame = () => {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    scale.value = Math.min(vw / BASE_WIDTH, vh / BASE_HEIGHT);
+};
+
+const playersFields = computed(() => {
+    const player1Color =
+        players.value.find((player) => player.startingField === 0)?.color.hex ||
+        "#919190";
+    const player2Color =
+        players.value.find((player) => player.startingField === 10)?.color
+            .hex || "#919190";
+    const player3Color =
+        players.value.find((player) => player.startingField === 20)?.color
+            .hex || "#919190";
+    const player4Color =
+        players.value.find((player) => player.startingField === 30)?.color
+            .hex || "#919190";
+
+    return [player1Color, player2Color, player3Color, player4Color];
+});
+
+const getColor = (fieldNumber) => {
+    if (fieldNumber === "p1_f1") return "red";
+
+    if (fieldNumber > 0 && fieldNumber < 6) return playersFields.value[0];
+    if (fieldNumber > 10 && fieldNumber < 16) return playersFields.value[1];
+    if (fieldNumber > 20 && fieldNumber < 26) return playersFields.value[2];
+    if (fieldNumber > 30 && fieldNumber < 36) return playersFields.value[3];
+    return "#ffffff";
+};
+
+const getFinishFieldColor = (fieldNumber) => {
+    return getColor(fieldNumber - 90);
+};
+
+const getPawnColor = (fieldNumber) => {
+    if (fieldNumber > 90) {
+        return "white";
+    }
+
+    return players.value.find(
+        (player) =>
+            player.publicId === gameData.value.gameMap[fieldNumber - 1][0],
+    )?.color.hex;
+};
+
+const generateGameMap = () => {
+    // const przesunięcie = 0;
+
+    const przesunięcie = players.value.find(
+        (player) => player.publicId === gameData.value.yourPublicId,
+    )?.startingField;
+
+    const mapa = [
+        0, 0, 0, 0, 19, 20, 21, 0, 0, 0, 0, 0, 0, 0, 0, 18, 111, 22, 0, 0, 0, 0,
+        0, 0, 0, 0, 17, 112, 23, 0, 0, 0, 0, 0, 0, 0, 0, 16, 113, 24, 0, 0, 0,
+        0, 11, 12, 13, 14, 15, 114, 25, 26, 27, 28, 29, 10, 101, 102, 103, 104,
+        0, 124, 123, 122, 121, 30, 9, 8, 7, 6, 5, 94, 35, 34, 33, 32, 31, 0, 0,
+        0, 0, 4, 93, 36, 0, 0, 0, 0, 0, 0, 0, 0, 3, 92, 37, 0, 0, 0, 0, 0, 0, 0,
+        0, 2, 91, 38, 0, 0, 0, 0, 0, 0, 0, 0, 1, 40, 39, 0, 0, 0, 0,
+    ].map((num) => {
+        if (!num || num[0] === "f") return num;
+
+        // 91-94 - pola finiszowe 1 gracza
+        // 101-104 - pola finiszowe 2 gracza
+        // 111-114 - pola finiszowe 3 gracza
+        // 121-124 - pola finiszowe 4 gracza
+
+        console.log(przesunięcie);
+
+        if (num > 90) {
+            let min = 91;
+            let max = 124;
+
+            let newNumber = num + przesunięcie;
+
+            if (newNumber > 124) newNumber = (newNumber % 130) + 90;
+
+            return newNumber;
+        }
+
+        if (num + przesunięcie > 40 && (num + przesunięcie) % 40 === 0)
+            return 40;
+        if (num + przesunięcie > 40) return (num + przesunięcie) % 40;
+        return num + przesunięcie;
+    });
+
+    return mapa;
+};
+
 onMounted(() => {
     if (store.socket) {
-        store.socket.on("gameData", (d) => setGameData(d, gameData));
-        store.socket.on("players", (d) => players.value = d);
+        store.socket.on("gameData", (d) => {
+            setGameData(d, gameData);
+        });
+        store.socket.on("players", (d) => (players.value = d));
 
         store.emit("gameData", {
             eventName: "gameDataRequest",
         });
     }
+
+    window.addEventListener("resize", resizeGame);
+    resizeGame();
 });
 
 onBeforeUnmount(() => {
     store.socket.off("gameData");
+    window.removeEventListener("resize", resizeGame);
 });
 
 const rollDice = () => {
     store.emit("gameData", {
-        eventName: "rollDice"
+        eventName: "rollDice",
     });
 };
 
-const number = ref(null)
+const setMap = () => {
+    store.emit("gameData", {
+        eventName: "setGameMap",
+        map: prompt("Podaj finished json"),
+    });
+};
+
+const setFinished = () => {
+    store.emit("gameData", {
+        eventName: "setFinished",
+        finished: prompt("Podaj finished json"),
+    });
+};
 
 const pawnMovement = () => {
+    const idk = Number(prompt("Podaj pionek"));
     store.emit("gameData", {
         eventName: "pawnMovement",
-        pawnId: number.value
+        // pawnId: number.value,
+        pawnId: idk,
     });
+};
+
+const isPawnOnFinish = (field) => {
+    const player = players.value.find(
+        (player) => player.startingField === field - 90 - (field % 10),
+    );
+
+    if (!player) return false;
+
+    for (const playersPawns of gameData.value.finishPositions) {
+        for (const [publicId, pawnId] of playersPawns) {
+            if (publicId === player.publicId && field % 10 === pawnId)
+                return true;
+        }
+    }
+
+    return false;
 };
 </script>
 
-
-<!-- 
-
-type Pawn = [publicId: string, pawnId: number];
-type StartingPosition = [publicId: string, startingField: number];
-type Color = {hex: string, name: string}
-type Players = {publicId: string, username: string, color: Color, ...data: {[key: string]: any}}
-
-{
-  gameMap: array<Pawn | int>[40]
-  currentAction: "Rzut Kością" | "Ruch pionkami"
-  startingPositionArea: Pawn[8-16] 
-  finishPositions: Pawn[2-4][2-4]
-  timesThrown: int
-  diceThrowResult: int
-  playersStartingPoints: StartingPosition[2-4]
-  yourTurn: boolean
-  currentPlayerIndex: int
-  possiblePawnMoves: Pawn[3][0-4]
-}
-
-{
-  players: Players[2-4]
-}
--->
-
 <template>
-    <div v-if="gameData">
-        <h1>Chińczyk</h1>
-        <h2>Aktualny gracz: {{ players[gameData["currentPlayerIndex"]] }}</h2>
-        <h2>Czy Twoja tura? {{ gameData["yourTurn"] ? "Tak" : "Nie" }}</h2>
-        <button @click="rollDice">Rzuć kością</button>
-        <p>Pawns:</p>
-        {{ gameData[possiblePawnMoves] }}
-        <p>Pawn id do wysłania:</p>
-        <input type="number" v-model="number"/>
-        <button @click="pawnMovement">Wybierz pionek</button>
-        <div class="game">
-            
-            <pre>
-                {{ gameData }}
-            </pre>
+    <div class="background">
+        <div
+            v-if="gameData && players"
+            class="game"
+            :style="{ transform: `scale(${scale})` }"
+        >
+            <!-- <pre style="overflow-y: scroll; height: 100vh">
+            {{ gameData }}
+            {{ players }}
+            {{ playersFields }}
+            </pre> -->
+
+            <div class="map">
+                <!-- BAZY -->
+                <div
+                    v-for="(player, index) in mapBases"
+                    :key="player.startingField"
+                    :data-player="index"
+                    class="player-base"
+                    :style="`--background: ${player.color.hex}`"
+                >
+                    <p class="username">
+                        {{ player.username }}&nbsp;{{
+                            player.publicId === gameData.yourPublicId
+                                ? "(Ty)"
+                                : ""
+                        }}
+                    </p>
+
+                    <div
+                        v-for="pawnIndex in 4"
+                        :key="pawnIndex"
+                        :data-field="pawnIndex"
+                        class="base-field"
+                    >
+                        <div
+                            v-if="
+                                gameData.startingPositionArea.some(
+                                    (pawn) =>
+                                        pawn[0] === player.publicId &&
+                                        pawn[1] === pawnIndex,
+                                )
+                            "
+                            class="ludo-pawn"
+                        />
+                    </div>
+                </div>
+
+                <!-- MAPA -->
+                <div class="main-map">
+                    <div
+                        v-for="field in generateGameMap()"
+                        :key="field"
+                        :class="{
+                            'main-map-field': field !== 0,
+                            'starting-field': !((field - 1) % 10),
+                            'finish-field': field > 90,
+                        }"
+                        :data-number="field > 90 ? field % 10 : null"
+                        :style="`--bg-color: ${field < 90 ? getColor(field) : getFinishFieldColor(field)}`"
+                    >
+                        <!-- <span v-if="field !== 0">{{ field }}</span> -->
+
+                        <div
+                            v-if="
+                                (Boolean(field) &&
+                                    Boolean(gameData.gameMap[field - 1])) ||
+                                isPawnOnFinish(field)
+                            "
+                            :style="`--background: ${getPawnColor(field)}`"
+                            class="ludo-pawn"
+                        ></div>
+                        <span
+                            v-else-if="(field - 1) % 10 === 0 && field < 90"
+                            class="s-field"
+                        >
+                            <img :src="Start" alt="" />
+                            <!-- {{ playersFields[] }} -->
+                        </span>
+                        <!-- <span v-else-if="field !== 0">
+                            {{field}}
+                        </span> -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="gameInfo">
+                <h2>{{ players[gameData["currentPlayerIndex"]].username }}</h2>
+                <h1>{{ gameData["currentAction"] }}</h1>
+                <h3 class="rolled">Wyrzucono: 5</h3>
+                <button @click="rollDice">Rzuć kością</button>
+                <button @click="pawnMovement">Rusz się pionkiem</button>
+                <button @click="setMap">Ustaw mapę</button>
+                <button @click="setFinished">Ustaw finished</button>
+                <div class="dice"></div>
+            </div>
         </div>
-        
     </div>
 </template>
 
 <style lang="scss" scoped>
+.background {
+    display: grid;
+    place-items: center;
+    background-color: #e8f4fc;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background-image: url("../../../assets/grain.png");
+    background: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
 
 .game {
+    width: 1920px;
+    height: 950px;
+    transform-origin: top left;
+    margin-block: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+}
+
+// Game Map
+
+.map {
+    --map-padding: 3rem;
+    position: relative;
+    width: 900px;
+    aspect-ratio: 1 / 1;
+    background-color: blue;
+    padding: 3rem;
+    overflow: hidden;
+    border: 5px solid black;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    border-radius: 4rem;
+    background-image: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 1) 0%,
+        rgba(230, 230, 230, 1) 100%
+    );
+
+    .player-base {
+        inset: var(--map-padding) auto auto var(--map-padding);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        width: 175px;
+        height: 175px;
+        background-color: red;
+        border-radius: 50%;
+        // border: 4px solid black;
+        position: absolute;
+        place-items: center;
+        padding: 1.75rem;
+        box-shadow:
+            rgba(50, 50, 93, 0.25) 0px 13px 27px -5px,
+            rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+
+        background-image: linear-gradient(
+            211deg,
+            var(--background) 0%,
+            hsl(from var(--background) h s calc(l * 0.8)) 80%
+        );
+
+        .base-field {
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            border: inset 2px
+                hsla(from var(--background) h s calc(l * 0.1) / 0.2);
+            background-color: hsl(from var(--background) h s calc(l * 0.4));
+            width: 50px;
+            height: 50px;
+        }
+    }
+
+    .username {
+        font-family: "Caveat Brush";
+
+        font-size: 1.75rem;
+        position: absolute;
+        top: -2.5rem;
+    }
+
+    [data-player="1"] {
+        inset: var(--map-padding) var(--map-padding) auto auto;
+    }
+
+    [data-player="2"] {
+        inset: auto var(--map-padding) var(--map-padding) auto;
+    }
+
+    [data-player="3"] {
+        inset: auto auto var(--map-padding) var(--map-padding);
+    }
+}
+
+.ludo-pawn {
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    transition:
+        scale 0.2s,
+        box-shadow 0.2s;
+    background-color: hsl(from var(--background) h s calc(l * 1.2));
+    border-radius: 50%;
+    position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.349);
+    box-shadow:
+        inset 0 6px 8px rgba(255, 255, 255, 0.76),
+        /* highlight góry */ inset 0 -6px 10px rgba(0, 0, 0, 0.247),
+        0 4px 6px rgba(0, 0, 0, 0.308);
+
+    &:hover {
+        background-color: hsl(from var(--background) h s calc(l * 0.9));
+        transform: scale(1.05);
+        box-shadow:
+            0 0 5px rgba(255, 255, 255, 0.301),
+            inset 0 6px 8px rgba(255, 255, 255, 0.76),
+            /* highlight góry */ inset 0 -6px 10px rgba(0, 0, 0, 0.247),
+            0 4px 6px rgba(0, 0, 0, 0.308);
+    }
+}
+
+.main-map {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    grid-template-columns: repeat(11, 1fr);
+    grid-template-rows: repeat(11, 1fr);
+
+    .main-map-field {
+        background-color: #fff;
+        width: 95%;
+        height: 95%;
+        border-radius: 50%;
+        border: 1px solid black;
+        display: grid;
+        place-items: center;
+        font-size: 1.25rem;
+        font-weight: bold;
+
+        background-color: hsl(from var(--bg-color) h s calc(l * 1.5));
+    }
+
+    .starting-field:not(.finish-field) {
+        background-color: var(--bg-color);
+    }
+
+    .s-field {
+        font-family: sans-serif;
+        border-radius: 0;
+        display: block;
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        line-height: 1;
+        img {
+            width: 90%;
+        }
+    }
+
+    .finish-field {
+        border-radius: 0;
+        width: 90%;
+        position: relative;
+        height: 90%;
+
+        background-color: hsl(from var(--bg-color) h s calc(l * 1));
+
+        &::after {
+            content: "";
+            display: grid;
+            place-items: center;
+            position: absolute;
+            inset: 5px;
+            background-color: rgba(255, 255, 255, 0.164);
+            box-shadow: rgb(255, 255, 255) 0px 0px 15px;
+            background-image: url("../../../assets/trophy.svg");
+            background-position: center;
+            background-size: 50%;
+            background-repeat: no-repeat;
+        }
+
+        &:has(.ludo-pawn)::after {
+            content: none;
+        }
+    }
+}
+
+// Game info
+
+.gameInfo {
+    width: 500px;
+    background-color: purple;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding: 1rem;
+}
+
+.rolled {
+    margin-block: auto;
+}
+
+.dice {
+    width: 200px;
+    aspect-ratio: 1 / 1;
+    background-color: white;
 }
 </style>

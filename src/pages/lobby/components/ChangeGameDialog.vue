@@ -54,7 +54,7 @@ const changeGame = (gameTitle) => {
                     :image-height="2.5"
                 >
                     <img
-                        :src="`/src/assets/${game.title}.png`"
+                        :src="`/src/assets/games/gamePreviews/${game.title}_preview.png`"
                         class="game-bgImage"
                     />
 
@@ -242,13 +242,13 @@ const changeGame = (gameTitle) => {
 
     .boardgame-image {
         .game-info-wrapper {
-                background-color: #000;
-                position: relative;
-                .game-info {
-                    gap: 0.5rem;
-                    flex-direction: column;
-                }
+            background-color: #000;
+            position: relative;
+            .game-info {
+                gap: 0.5rem;
+                flex-direction: column;
             }
+        }
 
         .game-bgImage {
             position: relative;
@@ -260,8 +260,6 @@ const changeGame = (gameTitle) => {
             background-color: hsl(39, 77%, 3%);
         }
     }
-
-   
 }
 
 @media (width < 500px) {

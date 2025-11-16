@@ -34,7 +34,7 @@ const changeGameDialogRef = ref(null);
         >
             <div class="game-image-wrapper">
                 <img
-                    :src="`/src/assets/${props.currentGame.title}.png`"
+                    :src="`/src/assets/games/selectedGames/${props.currentGame.title}.png`"
                     alt=""
                     class="game-image"
                 />
