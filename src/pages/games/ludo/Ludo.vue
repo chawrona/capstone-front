@@ -155,6 +155,12 @@ const generateGameMap = () => {
     return mapa;
 };
 
+const getPawnId = field => {
+    console.log("PIONEK: ", field, gameData.value.gameMap[field - 1][1]);
+    
+    return gameData.value.gameMap[field - 1][1]
+}
+
 onMounted(() => {
     if (store.socket) {
         store.socket.on("gameData", (d) => {
@@ -177,6 +183,10 @@ onBeforeUnmount(() => {
 });
 
 const rollDice = () => {
+    if (!gameData.value.yourTurn) return;
+    console.log();
+    
+    if (gameData.value.currentAction !== "Rzut kością") return;
     store.emit("gameData", {
         eventName: "rollDice",
     });
@@ -196,12 +206,11 @@ const setFinished = () => {
     });
 };
 
-const pawnMovement = () => {
-    const idk = Number(prompt("Podaj pionek"));
+const pawnMovement = (pawnId) => {
+    if (!gameData.value.yourTurn) return;
     store.emit("gameData", {
         eventName: "pawnMovement",
-        // pawnId: number.value,
-        pawnId: idk,
+        pawnId: pawnId,
     });
 };
 
@@ -212,7 +221,13 @@ const isPawnOnFinish = (field) => {
 
     if (!player) return false;
 
+
+
+    
+
     for (const playersPawns of gameData.value.finishPositions) {
+            console.log("HERE: ", playersPawns);
+            
         for (const [publicId, pawnId] of playersPawns) {
             if (publicId === player.publicId && field % 10 === pawnId)
                 return true;
@@ -259,7 +274,7 @@ const isPawnOnFinish = (field) => {
                         :data-field="pawnIndex"
                         class="base-field"
                     >
-                        <div
+                        <button
                             v-if="
                                 gameData.startingPositionArea.some(
                                     (pawn) =>
@@ -268,7 +283,14 @@ const isPawnOnFinish = (field) => {
                                 )
                             "
                             class="ludo-pawn"
-                        />
+                            @click="() => pawnMovement(pawnIndex)"
+                            :class="{'your-pawn': player.publicId === gameData.yourPublicId && gameData.yourTurn && gameData.currentAction === 'Ruch pionka' && (gameData.diceThrowResult === 1 || gameData.diceThrowResult === 6)}"
+                            :disabled="!gameData.yourTurn || player.publicId !== gameData.yourPublicId || gameData.currentAction !== 'Ruch pionka' || (gameData.diceThrowResult !== 1 && gameData.diceThrowResult !== 6)" 
+
+                            />
+                            
+                            
+                       
                     </div>
                 </div>
 
@@ -287,7 +309,7 @@ const isPawnOnFinish = (field) => {
                     >
                         <!-- <span v-if="field !== 0">{{ field }}</span> -->
 
-                        <div
+                        <button
                             v-if="
                                 (Boolean(field) &&
                                     Boolean(gameData.gameMap[field - 1])) ||
@@ -295,7 +317,14 @@ const isPawnOnFinish = (field) => {
                             "
                             :style="`--background: ${getPawnColor(field)}`"
                             class="ludo-pawn"
-                        ></div>
+                            @click="() => pawnMovement(getPawnId(field))"
+                            :class="{'your-pawn': gameData.gameMap[field - 1][0] === gameData.yourPublicId && gameData.yourTurn && gameData.currentAction === 'Ruch pionka'}"
+                            :disabled="gameData.gameMap[field - 1][0] !== gameData.yourPublicId || gameData.currentAction !== 'Ruch pionka'"
+                        />
+                     
+                        
+
+                    
                         <span
                             v-else-if="(field - 1) % 10 === 0 && field < 90"
                             class="s-field"
@@ -311,14 +340,13 @@ const isPawnOnFinish = (field) => {
             </div>
 
             <div class="gameInfo">
-                <h2>{{ players[gameData["currentPlayerIndex"]].username }}</h2>
-                <h1>{{ gameData["currentAction"] }}</h1>
-                <h3 class="rolled">Wyrzucono: 5</h3>
-                <button @click="rollDice">Rzuć kością</button>
-                <button @click="pawnMovement">Rusz się pionkiem</button>
-                <button @click="setMap">Ustaw mapę</button>
-                <button @click="setFinished">Ustaw finished</button>
-                <div class="dice"></div>
+                <h1 class="game-title">Chińczyk</h1>
+                <h2 class="whos-turn">{{ gameData.actionMessage }}</h2>
+                <h3 class="rolled" :class="{'opacity-0': gameData.currentAction !== 'Ruch pionka'}">Wyrzucono: {{ gameData.diceThrowResult }}</h3>
+                
+                <div class="dice" :class="{'hide': !gameData.yourTurn}">
+                    <button @click="rollDice">Rzuć kością</button>
+                </div>
             </div>
         </div>
     </div>
@@ -427,7 +455,7 @@ const isPawnOnFinish = (field) => {
 .ludo-pawn {
     width: 40px;
     height: 40px;
-    cursor: pointer;
+   
     transition:
         scale 0.2s,
         box-shadow 0.2s;
@@ -440,7 +468,8 @@ const isPawnOnFinish = (field) => {
         /* highlight góry */ inset 0 -6px 10px rgba(0, 0, 0, 0.247),
         0 4px 6px rgba(0, 0, 0, 0.308);
 
-    &:hover {
+    &.your-pawn:hover {
+         cursor: pointer;
         background-color: hsl(from var(--background) h s calc(l * 0.9));
         transform: scale(1.05);
         box-shadow:
@@ -523,15 +552,30 @@ const isPawnOnFinish = (field) => {
 
 .gameInfo {
     width: 500px;
-    background-color: purple;
-    height: 100%;
+     font-family: "Caveat Brush";
+    height: 900px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 1rem;
+    padding: 2rem;
+    position: relative;
+        border-radius: calc(2rem - 5px);
+    background: linear-gradient(138deg,rgba(70, 208, 250, 0.4) 0%, rgba(109, 211, 242, 0.3) 27%, rgba(157, 224, 245, 0.25) 56%, rgba(141, 223, 247, 0.4) 75%, rgba(103, 214, 248, 0.5) 91%, rgba(70, 208, 250, 0.5) 100%);
+    
+    &::after {
+        position: absolute;
+        border-radius: 2rem;
+        inset: -5px;
+        content: "";
+      z-index: -1;
+
+      background: linear-gradient(148deg,rgba(230, 230, 230, 0.651) 0%, rgba(219, 219, 219, 0.63) 49%, rgba(175, 175, 175, 0.637) 100%);
+    }
+    
 }
 
 .rolled {
+    font-size: 2.25rem;
     margin-block: auto;
 }
 
@@ -539,5 +583,29 @@ const isPawnOnFinish = (field) => {
     width: 200px;
     aspect-ratio: 1 / 1;
     background-color: white;
+}
+
+
+.opacity-0 {
+    color: transparent;
+}
+
+.game-title {
+font-size: 3.5rem;
+ font-style: italic;
+font-weight: bold;
+}
+
+.whos-turn {
+       
+    font-family: "Caveat Brush";
+    text-align: center;
+ 
+    font-size: 2.25rem;
+    margin: 1rem 0;
+}
+
+.hide {
+    opacity: 0;
 }
 </style>
