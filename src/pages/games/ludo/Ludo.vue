@@ -344,8 +344,8 @@ const isPawnOnFinish = (field) => {
                 <h2 class="whos-turn">{{ gameData.actionMessage }}</h2>
                 <h3 class="rolled" :class="{'opacity-0': gameData.currentAction !== 'Ruch pionka'}">Wyrzucono: {{ gameData.diceThrowResult }}</h3>
                 
-                <div class="dice" :class="{'hide': !gameData.yourTurn}">
-                    <button @click="rollDice">Rzuć kością</button>
+                <div class="dice" :class="{'hide': !gameData.yourTurn}" @click="rollDice">
+                    Rzuć kością
                 </div>
             </div>
         </div>
@@ -581,8 +581,15 @@ const isPawnOnFinish = (field) => {
 
 .dice {
     width: 200px;
-    aspect-ratio: 1 / 1;
+    display: grid;
+    place-items: center;
+    font-size: 2rem;
+    aspect-ratio: 1 / 1;cursor: pointer;
     background-color: white;
+
+    &:hover {
+        background-color: #cfcfcf;
+    }
 }
 
 
