@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import Start from "@/assets/start_white.svg";
 import { useAppStore } from "@/store/useAppStore.js";
 
+import Dice from "../../../components/common/Dice.vue";
 import setGameData from "../composables/setGameData";
 
 const store = useAppStore();
@@ -87,12 +88,11 @@ const playersFields = computed(() => {
 });
 
 const getColor = (fieldNumber) => {
-    if (fieldNumber === "p1_f1") return "red";
-
     if (fieldNumber > 0 && fieldNumber < 6) return playersFields.value[0];
     if (fieldNumber > 10 && fieldNumber < 16) return playersFields.value[1];
     if (fieldNumber > 20 && fieldNumber < 26) return playersFields.value[2];
     if (fieldNumber > 30 && fieldNumber < 36) return playersFields.value[3];
+
     return "#ffffff";
 };
 
@@ -102,7 +102,12 @@ const getFinishFieldColor = (fieldNumber) => {
 
 const getPawnColor = (fieldNumber) => {
     if (fieldNumber > 90) {
-        return "white";
+        const player = players.value.find(
+            (player) =>
+                player.startingField === fieldNumber - 90 - (fieldNumber % 10),
+        );
+
+        return player.color.hex;
     }
 
     return players.value.find(
@@ -155,18 +160,46 @@ const generateGameMap = () => {
     return mapa;
 };
 
-const getPawnId = field => {
+const getPawnId = (field) => {
     console.log("PIONEK: ", field, gameData.value.gameMap[field - 1][1]);
-    
-    return gameData.value.gameMap[field - 1][1]
-}
+
+    return gameData.value.gameMap[field - 1][1];
+};
+
+const trigger = ref(0);
+const canRollAgain = ref(true);
+const prevAction = ref("Rzut kością");
+const hideRolled = ref(false);
+
+const isPaused = ref(false);
 
 onMounted(() => {
     if (store.socket) {
         store.socket.on("gameData", (d) => {
             setGameData(d, gameData);
+
+            isPaused.value = d.isPaused;
+
+            console.log(isPaused.value, d.isPaused);
+
+            if (prevAction.value === "Rzut kością") {
+                trigger.value += 1;
+                hideRolled.value = true;
+
+                canRollAgain.value = false;
+
+                setTimeout(() => {
+                    canRollAgain.value = true;
+                    hideRolled.value = false;
+                }, 1000);
+            }
+
+            prevAction.value = gameData.value.currentAction;
         });
         store.socket.on("players", (d) => (players.value = d));
+
+        store.socket.on("pause", (d) => (isPaused.value = true));
+        store.socket.on("resume", (d) => (isPaused.value = false));
 
         store.emit("gameData", {
             eventName: "gameDataRequest",
@@ -179,13 +212,15 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     store.socket.off("gameData");
+    store.socket.off("pause");
     window.removeEventListener("resize", resizeGame);
 });
 
 const rollDice = () => {
+    if (!canRollAgain.value) return;
     if (!gameData.value.yourTurn) return;
     console.log();
-    
+
     if (gameData.value.currentAction !== "Rzut kością") return;
     store.emit("gameData", {
         eventName: "rollDice",
@@ -221,13 +256,9 @@ const isPawnOnFinish = (field) => {
 
     if (!player) return false;
 
-
-
-    
-
     for (const playersPawns of gameData.value.finishPositions) {
-            console.log("HERE: ", playersPawns);
-            
+        console.log("HERE: ", playersPawns);
+
         for (const [publicId, pawnId] of playersPawns) {
             if (publicId === player.publicId && field % 10 === pawnId)
                 return true;
@@ -236,10 +267,24 @@ const isPawnOnFinish = (field) => {
 
     return false;
 };
+
+const getPublicIdFromFieldFinish = (field) => {
+    const player = players.value.find(
+        (player) => player.startingField === field - 90 - (field % 10),
+    );
+
+    return player.publicId;
+};
 </script>
 
 <template>
     <div class="background">
+        <div v-if="gameData && isPaused" class="paused">
+            <div>
+                <h1>Gra wstrzymana.</h1>
+                <h2>Jeden z graczy opuścił rozgrywkę.</h2>
+            </div>
+        </div>
         <div
             v-if="gameData && players"
             class="game"
@@ -283,14 +328,23 @@ const isPawnOnFinish = (field) => {
                                 )
                             "
                             class="ludo-pawn"
+                            :class="{
+                                'your-pawn':
+                                    player.publicId === gameData.yourPublicId &&
+                                    gameData.yourTurn &&
+                                    gameData.currentAction === 'Ruch pionka' &&
+                                    (gameData.diceThrowResult === 1 ||
+                                        gameData.diceThrowResult === 6),
+                            }"
+                            :disabled="
+                                !gameData.yourTurn ||
+                                player.publicId !== gameData.yourPublicId ||
+                                gameData.currentAction !== 'Ruch pionka' ||
+                                (gameData.diceThrowResult !== 1 &&
+                                    gameData.diceThrowResult !== 6)
+                            "
                             @click="() => pawnMovement(pawnIndex)"
-                            :class="{'your-pawn': player.publicId === gameData.yourPublicId && gameData.yourTurn && gameData.currentAction === 'Ruch pionka' && (gameData.diceThrowResult === 1 || gameData.diceThrowResult === 6)}"
-                            :disabled="!gameData.yourTurn || player.publicId !== gameData.yourPublicId || gameData.currentAction !== 'Ruch pionka' || (gameData.diceThrowResult !== 1 && gameData.diceThrowResult !== 6)" 
-
-                            />
-                            
-                            
-                       
+                        />
                     </div>
                 </div>
 
@@ -317,14 +371,26 @@ const isPawnOnFinish = (field) => {
                             "
                             :style="`--background: ${getPawnColor(field)}`"
                             class="ludo-pawn"
+                            :class="{
+                                'your-pawn':
+                                    (isPawnOnFinish(field)
+                                        ? getPublicIdFromFieldFinish(field) ===
+                                          gameData.yourPublicId
+                                        : gameData.gameMap[field - 1][0] ===
+                                          gameData.yourPublicId) &&
+                                    gameData.yourTurn &&
+                                    gameData.currentAction === 'Ruch pionka',
+                            }"
+                            :disabled="
+                                (isPawnOnFinish(field)
+                                    ? getPublicIdFromFieldFinish(field)
+                                    : gameData.gameMap[field - 1][0]) !==
+                                    gameData.yourPublicId ||
+                                gameData.currentAction !== 'Ruch pionka'
+                            "
                             @click="() => pawnMovement(getPawnId(field))"
-                            :class="{'your-pawn': gameData.gameMap[field - 1][0] === gameData.yourPublicId && gameData.yourTurn && gameData.currentAction === 'Ruch pionka'}"
-                            :disabled="gameData.gameMap[field - 1][0] !== gameData.yourPublicId || gameData.currentAction !== 'Ruch pionka'"
                         />
-                     
-                        
 
-                    
                         <span
                             v-else-if="(field - 1) % 10 === 0 && field < 90"
                             class="s-field"
@@ -341,12 +407,31 @@ const isPawnOnFinish = (field) => {
 
             <div class="gameInfo">
                 <h1 class="game-title">Chińczyk</h1>
-                <h2 class="whos-turn">{{ gameData.actionMessage }}</h2>
-                <h3 class="rolled" :class="{'opacity-0': gameData.currentAction !== 'Ruch pionka'}">Wyrzucono: {{ gameData.diceThrowResult }}</h3>
-                
-                <div class="dice" :class="{'hide': !gameData.yourTurn}" @click="rollDice">
+                <h2 class="whos-turn" :class="{ 'opacity-0': hideRolled }">
+                    {{ gameData.actionMessage }}
+                </h2>
+
+                <h3
+                    class="rolled"
+                    :class="{
+                        'opacity-0':
+                            gameData.currentAction !== 'Ruch pionka' ||
+                            hideRolled,
+                    }"
+                >
+                    Wyrzucono: {{ gameData.diceThrowResult }}
+                </h3>
+
+                <!-- <div class="dice"  @click="rollDice">
                     Rzuć kością
-                </div>
+                </div> -->
+
+                <Dice
+                    class="dice"
+                    :trigger="trigger"
+                    :new-value="gameData.diceThrowResult"
+                    @click="rollDice"
+                />
             </div>
         </div>
     </div>
@@ -452,10 +537,14 @@ const isPawnOnFinish = (field) => {
     }
 }
 
+.dice {
+    margin-bottom: 6rem;
+}
+
 .ludo-pawn {
     width: 40px;
     height: 40px;
-   
+
     transition:
         scale 0.2s,
         box-shadow 0.2s;
@@ -469,7 +558,7 @@ const isPawnOnFinish = (field) => {
         0 4px 6px rgba(0, 0, 0, 0.308);
 
     &.your-pawn:hover {
-         cursor: pointer;
+        cursor: pointer;
         background-color: hsl(from var(--background) h s calc(l * 0.9));
         transform: scale(1.05);
         box-shadow:
@@ -552,26 +641,58 @@ const isPawnOnFinish = (field) => {
 
 .gameInfo {
     width: 500px;
-     font-family: "Caveat Brush";
+    font-family: "Caveat Brush";
     height: 900px;
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 2rem;
     position: relative;
-        border-radius: calc(2rem - 5px);
-    background: linear-gradient(138deg,rgba(70, 208, 250, 0.4) 0%, rgba(109, 211, 242, 0.3) 27%, rgba(157, 224, 245, 0.25) 56%, rgba(141, 223, 247, 0.4) 75%, rgba(103, 214, 248, 0.5) 91%, rgba(70, 208, 250, 0.5) 100%);
-    
+    border-radius: calc(2rem - 5px);
+    background: linear-gradient(
+        138deg,
+        rgba(70, 208, 250, 0.4) 0%,
+        rgba(109, 211, 242, 0.3) 27%,
+        rgba(157, 224, 245, 0.25) 56%,
+        rgba(141, 223, 247, 0.4) 75%,
+        rgba(103, 214, 248, 0.5) 91%,
+        rgba(70, 208, 250, 0.5) 100%
+    );
+
     &::after {
         position: absolute;
         border-radius: 2rem;
         inset: -5px;
         content: "";
-      z-index: -1;
+        z-index: -1;
 
-      background: linear-gradient(148deg,rgba(230, 230, 230, 0.651) 0%, rgba(219, 219, 219, 0.63) 49%, rgba(175, 175, 175, 0.637) 100%);
+        background: linear-gradient(
+            148deg,
+            rgba(230, 230, 230, 0.651) 0%,
+            rgba(219, 219, 219, 0.63) 49%,
+            rgba(175, 175, 175, 0.637) 100%
+        );
     }
-    
+}
+
+.paused {
+    position: absolute;
+    z-index: 9999999;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.745);
+    display: grid;
+    color: white;
+    font-family: sans-serif;
+    place-items: center;
+    h1 {
+        max-width: 700px;
+        text-align: center;
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+    h2 {
+        font-size: 1.5rem;
+    }
 }
 
 .rolled {
@@ -579,35 +700,20 @@ const isPawnOnFinish = (field) => {
     margin-block: auto;
 }
 
-.dice {
-    width: 200px;
-    display: grid;
-    place-items: center;
-    font-size: 2rem;
-    aspect-ratio: 1 / 1;cursor: pointer;
-    background-color: white;
-
-    &:hover {
-        background-color: #cfcfcf;
-    }
-}
-
-
 .opacity-0 {
     color: transparent;
 }
 
 .game-title {
-font-size: 3.5rem;
- font-style: italic;
-font-weight: bold;
+    font-size: 3.5rem;
+    font-style: italic;
+    font-weight: bold;
 }
 
 .whos-turn {
-       
     font-family: "Caveat Brush";
     text-align: center;
- 
+
     font-size: 2.25rem;
     margin: 1rem 0;
 }
