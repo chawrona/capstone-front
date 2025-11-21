@@ -649,6 +649,8 @@ const getPublicIdFromFieldFinish = (field) => {
     padding: 2rem;
     position: relative;
     border-radius: calc(2rem - 5px);
+    transition: background 0.1s;
+    
     background: linear-gradient(
         138deg,
         rgba(70, 208, 250, 0.4) 0%,
@@ -658,6 +660,20 @@ const getPublicIdFromFieldFinish = (field) => {
         rgba(103, 214, 248, 0.5) 91%,
         rgba(70, 208, 250, 0.5) 100%
     );
+
+    *.myTurn {
+        background: linear-gradient(
+    138deg,
+    rgba(212, 175, 55, 0.4) 0%,
+    rgba(230, 190, 70, 0.35) 27%,
+    rgba(245, 215, 110, 0.3) 56%,
+    rgba(240, 210, 90, 0.45) 75%,
+    rgba(225, 185, 60, 0.5) 91%,
+    rgba(212, 175, 55, 0.55) 100%
+);
+
+    }
+    
 
     &::after {
         position: absolute;
