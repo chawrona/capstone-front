@@ -405,7 +405,7 @@ const getPublicIdFromFieldFinish = (field) => {
                 </div>
             </div>
 
-            <div class="gameInfo">
+            <div class="gameInfo" :class="{ myTurn: gameData.yourTurn }">
                 <h1 class="game-title">Chińczyk</h1>
                 <h2 class="whos-turn" :class="{ 'opacity-0': hideRolled }">
                     {{ gameData.actionMessage }}
@@ -650,7 +650,7 @@ const getPublicIdFromFieldFinish = (field) => {
     position: relative;
     border-radius: calc(2rem - 5px);
     transition: background 0.1s;
-    
+
     background: linear-gradient(
         138deg,
         rgba(70, 208, 250, 0.4) 0%,
@@ -661,19 +661,17 @@ const getPublicIdFromFieldFinish = (field) => {
         rgba(70, 208, 250, 0.5) 100%
     );
 
-    *.myTurn {
+    &.myTurn {
         background: linear-gradient(
-    138deg,
-    rgba(212, 175, 55, 0.4) 0%,
-    rgba(230, 190, 70, 0.35) 27%,
-    rgba(245, 215, 110, 0.3) 56%,
-    rgba(240, 210, 90, 0.45) 75%,
-    rgba(225, 185, 60, 0.5) 91%,
-    rgba(212, 175, 55, 0.55) 100%
-);
-
+            138deg,
+            rgba(212, 175, 55, 0.4) 0%,
+            rgba(230, 190, 70, 0.35) 27%,
+            rgba(245, 215, 110, 0.3) 56%,
+            rgba(240, 210, 90, 0.45) 75%,
+            rgba(225, 185, 60, 0.5) 91%,
+            rgba(212, 175, 55, 0.55) 100%
+        );
     }
-    
 
     &::after {
         position: absolute;
@@ -693,7 +691,7 @@ const getPublicIdFromFieldFinish = (field) => {
 
 .paused {
     position: absolute;
-    z-index: 9999999;
+    z-index: 9998;
     inset: 0;
     background-color: rgba(0, 0, 0, 0.745);
     display: grid;

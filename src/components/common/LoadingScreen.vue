@@ -19,7 +19,7 @@ const { isLoading } = storeToRefs(store);
 <style scoped>
 .background {
     position: absolute;
-    z-index: 999;
+    z-index: 99999999;
     display: flex;
     align-items: center;
     background: radial-gradient(

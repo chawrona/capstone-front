@@ -45,6 +45,7 @@ export default function useSocket() {
     });
 
     socket.on("lobby", (lobbyId) => {
+        console.log("LOBBY PRZEKIEROWANIE: ", lobbyId);
         store.setLoading(true);
         setTimeout(() => {
             router.push(`/${lobbyId}`);
