@@ -9,6 +9,10 @@ export const useAppStore = defineStore("socket", {
             });
         },
 
+        getIsLoading() {
+            return this.isLoading;
+        },
+
         setLoading(isLoading) {
             this.isLoading = isLoading;
         },

@@ -67,15 +67,22 @@ const changeGame = (gameTitle) => {
                         <div class="game-info">
                             <p class="game-difficulty">
                                 <img class="game-info-icon" :src="Target" />
-                                <span class="value">średni</span>
+                                <span class="value">{{ game.difficulty }}</span>
                             </p>
                             <p class="game-players-count">
                                 <img class="game-info-icon" :src="Players" />
-                                <span class="value">2-5</span>
+                                <span class="value">
+
+                                    {{ 
+                                        game.minPlayers === game.maxPlayers ?
+                                        game.minPlayers : `${game.minPlayers}-${game.maxPlayers}`
+                                        }}
+                                
+                                </span>
                             </p>
                             <p class="game-time">
                                 <img class="game-info-icon" :src="Clock" />
-                                <span class="value">30-60 min.</span>
+                                <span class="value">{{ game.time }}</span>
                             </p>
                         </div>
 

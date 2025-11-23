@@ -5,7 +5,6 @@ import Start from "@/assets/start_white.svg";
 import { useAppStore } from "@/store/useAppStore.js";
 
 import Dice from "../../../components/common/Dice.vue";
-import setGameData from "../composables/setGameData";
 
 const store = useAppStore();
 
@@ -175,12 +174,11 @@ const isPaused = ref(false);
 
 onMounted(() => {
     if (store.socket) {
-        store.socket.on("gameData", (d) => {
-            setGameData(d, gameData);
+        store.socket.on("gameData", (data) => {
+            gameData.value = data;
+            store.setLoading(false);
 
             isPaused.value = d.isPaused;
-
-            console.log(isPaused.value, d.isPaused);
 
             if (prevAction.value === "Rzut kością") {
                 trigger.value += 1;
@@ -201,9 +199,11 @@ onMounted(() => {
         store.socket.on("pause", (d) => (isPaused.value = true));
         store.socket.on("resume", (d) => (isPaused.value = false));
 
-        store.emit("gameData", {
-            eventName: "gameDataRequest",
-        });
+        setTimeout(() => {
+            store.emit("gameData", {
+                eventName: "gameDataRequest",
+            });
+        }, 500);
     }
 
     window.addEventListener("resize", resizeGame);
@@ -257,8 +257,6 @@ const isPawnOnFinish = (field) => {
     if (!player) return false;
 
     for (const playersPawns of gameData.value.finishPositions) {
-        console.log("HERE: ", playersPawns);
-
         for (const [publicId, pawnId] of playersPawns) {
             if (publicId === player.publicId && field % 10 === pawnId)
                 return true;
@@ -279,12 +277,7 @@ const getPublicIdFromFieldFinish = (field) => {
 
 <template>
     <div class="background">
-        <div v-if="gameData && isPaused" class="paused">
-            <div>
-                <h1>Gra wstrzymana.</h1>
-                <h2>Jeden z graczy opuścił rozgrywkę.</h2>
-            </div>
-        </div>
+        <div v-if="gameData && isPaused" class="paused"></div>
         <div
             v-if="gameData && players"
             class="game"

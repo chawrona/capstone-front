@@ -7,14 +7,14 @@ const routes = [
         path: "/",
     },
     {
-        component: () => import("@/pages/games/game/Game.vue"),
-        name: "game",
-        path: "/:id/game",
-    },
-    {
         component: () => import("@/pages/games/ludo/Ludo.vue"),
         name: "ludo",
         path: "/:id/ludo",
+    },
+    {
+        component: () => import("@/pages/games/eurobusiness/Eurobusiness.vue"),
+        name: "eurobusiness",
+        path: "/:id/eurobusiness",
     },
     {
         component: () => import("@/pages/lobby/LobbyPage.vue"),
