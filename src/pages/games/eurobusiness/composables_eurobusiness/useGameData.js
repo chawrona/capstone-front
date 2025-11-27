@@ -4,22 +4,73 @@ import { useAppStore } from "@/store/useAppStore";
 
 export function useGameData() {
     const store = useAppStore();
-    const gameData = ref(null);
+
+    const yourTurn = ref(null);
+    const playersData = ref(null);
+    const playersPosition = ref(null);
+    const gameMap = ref(null);
+    const availableActions = ref(null);
+    const rollResult = ref(null);
+    const yourPublicId = ref(null);
+    const currentMessage = ref(null);
+    const logs = ref([]);
+
+    const eventsMap = {
+        availableActions,
+        currentMessage,
+        gameMap,
+        logs,
+        playersData,
+        playersPosition,
+        rollResult,
+        yourPublicId,
+        yourTurn,
+    };
 
     onMounted(() => {
         if (!store.socket) return;
 
-        store.socket.on("gameData", (data) => {
-            gameData.value = data;
+        store.socket.on("gameDataRequest", (data) => {
+            for (const key in eventsMap) {
+                if (data[key] !== undefined) {
+                    eventsMap[key].value = data[key];
+                }
+            }
+
             store.setLoading(false);
         });
+
+        for (const eventName in eventsMap) {
+            store.socket.on(eventName, (data) => {
+                eventsMap[eventName].value = data;
+                console.log("Przyszło!");
+                console.log(eventName);
+                console.log(data);
+            });
+        }
 
         store.emit("gameData", { eventName: "gameDataRequest" });
     });
 
     onBeforeUnmount(() => {
-        store.socket?.off("gameData");
+        if (!store.socket) return;
+
+        store.socket.off("gameDataRequest");
+
+        for (const eventName in eventsMap) {
+            store.socket.off(eventName);
+        }
     });
 
-    return { gameData };
+    return {
+        availableActions,
+        currentMessage,
+        gameMap,
+        logs,
+        playersData,
+        playersPosition,
+        rollResult,
+        yourPublicId,
+        yourTurn,
+    };
 }

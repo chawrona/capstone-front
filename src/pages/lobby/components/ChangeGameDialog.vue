@@ -72,12 +72,11 @@ const changeGame = (gameTitle) => {
                             <p class="game-players-count">
                                 <img class="game-info-icon" :src="Players" />
                                 <span class="value">
-
-                                    {{ 
-                                        game.minPlayers === game.maxPlayers ?
-                                        game.minPlayers : `${game.minPlayers}-${game.maxPlayers}`
-                                        }}
-                                
+                                    {{
+                                        game.minPlayers === game.maxPlayers
+                                            ? game.minPlayers
+                                            : `${game.minPlayers}-${game.maxPlayers}`
+                                    }}
                                 </span>
                             </p>
                             <p class="game-time">

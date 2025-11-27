@@ -77,6 +77,7 @@ watch(
     transform-style: preserve-3d;
     transition: transform 1s;
     font-size: 16px;
+    transform: scale(0.75);
 }
 
 .dot {
@@ -103,51 +104,51 @@ watch(
 }
 
 .side:nth-child(1) {
-    transform: translateZ(3.1em);
+    transform: translateZ(3.1em) scale(0.75);
 }
 
 .side:nth-child(6) {
-    transform: rotateY(90deg) translateZ(3.1em);
+    transform: rotateY(90deg) translateZ(3.1em) scale(0.75);
 }
 
 .side:nth-child(3) {
-    transform: rotateY(-90deg) translateZ(3.1em);
+    transform: rotateY(-90deg) translateZ(3.1em) scale(0.75);
 }
 
 .side:nth-child(4) {
-    transform: rotateX(90deg) translateZ(3.1em);
+    transform: rotateX(90deg) translateZ(3.1em) scale(0.75);
 }
 
 .side:nth-child(5) {
-    transform: rotateX(-90deg) translateZ(3.1em);
+    transform: rotateX(-90deg) translateZ(3.1em) scale(0.75);
 }
 
 .side:nth-child(2) {
-    transform: rotateY(-180deg) translateZ(3.1em);
+    transform: rotateY(-180deg) translateZ(3.1em) scale(0.75);
 }
 
 .show-1 {
-    transform: rotateX(720deg) rotateZ(-720deg);
+    transform: rotateX(720deg) rotateZ(-720deg) scale(0.75);
 }
 
 .show-6 {
-    transform: rotateY(-450deg) rotateZ(-1440deg);
+    transform: rotateY(-450deg) rotateZ(-1440deg) scale(0.75);
 }
 
 .show-3 {
-    transform: rotateY(810deg) rotateZ(720deg);
+    transform: rotateY(810deg) rotateZ(720deg) scale(0.75);
 }
 
 .show-4 {
-    transform: rotateX(-810deg) rotateZ(-1080deg);
+    transform: rotateX(-810deg) rotateZ(-1080deg) scale(0.75);
 }
 
 .show-5 {
-    transform: rotateX(450deg) rotateZ(-720deg);
+    transform: rotateX(450deg) rotateZ(-720deg) scale(0.75);
 }
 
 .show-2 {
-    transform: rotateX(-900deg) rotateZ(1080deg);
+    transform: rotateX(-900deg) rotateZ(1080deg) scale(0.75);
 }
 
 .two-1,

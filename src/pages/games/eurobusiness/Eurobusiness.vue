@@ -1,49 +1,87 @@
 <script setup>
+import { computed, onMounted, ref } from "vue";
+
 import { useAppStore } from "@/store/useAppStore.js";
 
+import Dice from "../../../components/common/Dice.vue";
 import PauseScreen from "../../../components/common/PauseScreen.vue";
 import { useGamePause } from "../composables_games/useGamePause";
 import { useGameResize } from "../composables_games/useGameResize";
+import { useGameActions } from "./actions/useGameActions";
+import Logs from "./components_eurobusiness/Logs.vue";
+import PlayersData from "./components_eurobusiness/PlayersData.vue";
 import { useGameData } from "./composables_eurobusiness/useGameData";
 
 const store = useAppStore();
 const { scale } = useGameResize();
-const { gameData } = useGameData();
+const {
+    availableActions,
+    currentMessage,
+    gameMap,
+    logs,
+    playersData,
+    playersPosition,
+    rollResult,
+    yourPublicId,
+    yourTurn,
+} = useGameData();
+
+const { rollDice } = useGameActions();
+
 const { isPaused } = useGamePause();
+
+const trigger = ref(0);
+
+const idk = () => (trigger.value += 1);
 </script>
 
 <template>
     <div class="background">
         <PauseScreen v-if="gameData && isPaused" />
-
         <div
-            v-if="gameData"
+            v-if="gameMap"
             class="game"
             :style="{ transform: `scale(${scale})` }"
         >
             <!-- Gracze -->
             <div class="players">
-                <h2>Prawy panel</h2>
+                <PlayersData
+                    :players-data="playersData"
+                    :your-public-id="yourPublicId"
+                />
             </div>
 
             <!-- Plansza -->
-            <div class="map"></div>
+            <div class="map">
+                <div class="dices">
+                    <button @click="idk">Click</button>
+                    <button @click="rollDice">Roll</button>
+                    {{ rollResult }}
+                    <Dice :trigger="trigger" :new-value="rollResult" />
+                    <Dice :trigger="trigger" :new-value="rollResult" />
+                </div>
+            </div>
+
+            <!-- Logi -->
+            <Logs :logs="logs" :players-data="playersData" />
         </div>
     </div>
 </template>
 
 <style lang="scss" scoped>
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap");
+
 .background {
     display: grid;
     place-items: center;
-    background-color: #e8f4fc;
+    background-color: #0966a5;
     width: 100%;
     height: 100vh;
     overflow: hidden;
-    background-image: url("../../../assets/grain.png");
-    background: cover;
-    background-repeat: no-repeat;
-    background-position: center;
+    // background-image: url("../../../assets/grain.png");
+    // background: cover;
+    // background-repeat: no-repeat;
+    // background-position: center;
 }
 
 .game {
@@ -55,19 +93,31 @@ const { isPaused } = useGamePause();
     justify-content: center;
     align-items: center;
     gap: 2rem;
+    font-family: "Open sans";
 }
 
 .map {
+    display: grid;
+    place-items: center;
     position: relative;
-    width: 900px;
+    height: 900px;
     aspect-ratio: 1 / 1;
-    background-color: blue;
-    border: 3px solid black;
+    border-radius: 0.25rem;
+    background-position: center;
+    background-size: contain;
+    background-image:
+        url("../../../assets/games/gameAssets/eurobusinessMap.png"),
+        linear-gradient(180deg, #fcfaf5, #e2d7c4);
+}
+
+.dices {
+    display: flex;
+    gap: 1rem;
 }
 
 .players {
-    width: 500px;
+    width: 400px;
     height: 900px;
-    background-color: red;
+    // background-color: red;
 }
 </style>
