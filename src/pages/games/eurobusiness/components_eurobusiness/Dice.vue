@@ -1,11 +1,16 @@
 <script setup>
 import { ref, watch, computed } from "vue";
 
-const props = defineProps(["color", "newValue", "size", "trigger"]);
+const props = defineProps({
+    color: { default: "#000000", type: String },
+    newValue: { default: 1, type: Number },
+    size: { default: 65, type: Number },
+    trigger: { default: 1, type: Number }
+});
+
 const lastValue = ref(1);
 const animationClasses = ref([]);
 
-// Pozycje kropek dla każdej ściany
 const dotPositions = {
     1: [[50, 50]],
     2: [
@@ -40,7 +45,6 @@ const dotPositions = {
     ],
 };
 
-// Obliczane style bazujące na rozmiarze
 const styles = computed(() => ({
     dotMargin: -props.size * 0.1,
     dotRadius: props.size * 0.2,

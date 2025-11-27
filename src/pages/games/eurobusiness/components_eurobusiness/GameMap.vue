@@ -63,7 +63,7 @@ const getUserColor = (publicId) => {
             :style="`grid-area: cell${position}`"
         >
             <div
-                v-for="player in [...players, 'id1', 'id2', 'id3']"
+                v-for="player in players"
                 :key="player"
                 class="player"
                 :style="`--color: ${getUserColor(player)}`"
