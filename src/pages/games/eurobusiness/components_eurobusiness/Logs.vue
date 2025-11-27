@@ -1,7 +1,11 @@
 <script setup>
+import { computed } from "vue";
+
 const props = defineProps(["logs", "playersData"]);
 
 const replaceLogMessage = (log) => {
+    if (log === "hr") return null;
+
     const players = props.playersData.map((player) => [
         player.username,
         player.color.hex,
@@ -16,22 +20,43 @@ const replaceLogMessage = (log) => {
 
     log = log.replace(
         "$",
-        `<span style="font-weight: 600; color: green"> $</span>`,
+        `<span style="font-weight: 600; color: green">$</span>`,
     );
 
     return log;
 };
+
+const newLogs = computed(() => {
+    let logs = [...props.logs];
+
+    if (logs.length > 22) {
+        logs = logs.slice(-22);
+    }
+
+    if (logs[logs.length - 1] === "hr") {
+        logs.pop();
+    }
+
+    return logs;
+});
 </script>
 
 <template>
     <div class="logs">
         <h1 class="logsTitle">Historia gry</h1>
-        <div
-            v-for="(log, index) in logs"
-            :key="index + log[1]"
-            class="log"
-            v-html="replaceLogMessage(log)"
-        ></div>
+        <template v-for="(log, index) in newLogs" :key="index + log">
+            <div v-if="log === 'hr'" class="hr">
+                <div class="line"></div>
+                <div class="text">Nowa tura</div>
+                <div class="line"></div>
+            </div>
+            <div
+                v-else
+                class="log"
+                :style="`opacity: ${1 - (newLogs.length - 1 - index) * 0.025}`"
+                v-html="replaceLogMessage(log)"
+            />
+        </template>
     </div>
 </template>
 
@@ -43,14 +68,36 @@ const replaceLogMessage = (log) => {
     height: 900px;
     border-radius: 0.25rem;
     background-image: linear-gradient(180deg, #fcfaf5, #e2d7c4);
-    padding: 1.5rem;
+    padding: 1.5rem 1.25rem;
     font-weight: 400;
+    font-size: 0.9rem;
     gap: 0.75rem;
-    line-height: 1.2;
+    line-height: 1.4;
     overflow: hidden;
 }
 
 .logsTitle {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.hr {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+
+    margin-top: 0.75rem;
+
+    .line {
+        height: 1px;
+        width: 100%;
+        background-color: #bbbbbb;
+    }
+
+    .text {
+        flex-shrink: 0;
+        color: #414141;
+        font-size: 0.75rem;
+    }
 }
 </style>

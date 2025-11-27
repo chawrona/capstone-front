@@ -13,7 +13,8 @@ export function useGameData() {
     const rollResult = ref(null);
     const yourPublicId = ref(null);
     const currentMessage = ref(null);
-    const logs = ref([]);
+    const logs = ref(["Brak logów"]);
+    const time = ref("01:00");
 
     const eventsMap = {
         availableActions,
@@ -23,6 +24,7 @@ export function useGameData() {
         playersData,
         playersPosition,
         rollResult,
+        time,
         yourPublicId,
         yourTurn,
     };
@@ -43,9 +45,6 @@ export function useGameData() {
         for (const eventName in eventsMap) {
             store.socket.on(eventName, (data) => {
                 eventsMap[eventName].value = data;
-                console.log("Przyszło!");
-                console.log(eventName);
-                console.log(data);
             });
         }
 
@@ -70,6 +69,7 @@ export function useGameData() {
         playersData,
         playersPosition,
         rollResult,
+        time,
         yourPublicId,
         yourTurn,
     };

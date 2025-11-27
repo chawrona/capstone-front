@@ -24,6 +24,7 @@ export default [
             "perfectionist/sort-objects": "error",
             "prettier/prettier": ["error", { tabWidth: 4 }],
             "vue/multi-word-component-names": "off",
+            "vue/no-v-html": "off",
             "vue/require-prop-types": "off",
         },
     },

@@ -1,53 +1,14 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed } from "vue";
 
 import User from "@/assets/user.png";
 
 const props = defineProps(["playersData", "yourPublicId"]);
 
-const testPlayers = ref([
-    {
-        color: { hex: "#d72638", name: "crimson" },
-        inJail: false,
-        money: 0,
-        position: 0,
-        publicId: "7768c67c-ddc0-49cf-bdb5-d5cb24fefced1",
-        turnOrder: 1,
-        username: "Thinkofistodo",
-    },
-    {
-        color: { hex: "#22c55e", name: "crimson" },
-        inJail: false,
-        money: 0,
-        position: 0,
-        publicId: "7768c67c-ddc0-49cf-bdb5-d5cb24fefced4",
-        turnOrder: 1,
-        username: "ArekiS",
-    },
-    {
-        color: { hex: "#3b82f6", name: "crimson" },
-        inJail: false,
-        money: 0,
-        position: 0,
-        publicId: "7768c67c-ddc0-49cf-bdb5-d5cb24fefced",
-        turnOrder: 1,
-        username: "Versus137",
-    },
-    {
-        color: { hex: "#9333ea", name: "crimson" },
-        inJail: false,
-        money: 0,
-        position: 0,
-        publicId: "7768c67c-ddc0-49cf-bdb5-d5cb24fefcevd",
-        turnOrder: 1,
-        username: "SenseiW",
-    },
-]);
-
 const players = computed(() => {
-    if (testPlayers.value.length === 4) return testPlayers.value;
-    const players = [...testPlayers.value];
-    for (let i = 0; i < 4 - testPlayers.value.length; i++) {
+    if (props.playersData.length === 4) return props.playersData;
+    const players = [...props.playersData];
+    for (let i = 0; i < 4 - props.playersData.length; i++) {
         players.push({
             color: { hex: "#3337", name: "gray" },
             money: null,
@@ -100,18 +61,19 @@ const players = computed(() => {
 .players {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: end;
     align-items: start;
+    gap: 0.75rem;
+    color: #1d1d1d;
 }
 
 .player {
-    height: 200px;
+    height: 150px;
     width: 100%;
     border-radius: 0.25rem;
     background: linear-gradient(180deg, #fcfaf5, #e2d7c4);
     padding: 1.5rem 1.15rem;
     font-family: "Open Sans";
-    font-size: 1.25rem;
 
     &.you {
         background: linear-gradient(
@@ -143,8 +105,8 @@ const players = computed(() => {
 }
 
 .playerIcon {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     background-color: var(--color);
     border-radius: 50%;
     padding: 5px;
@@ -155,6 +117,7 @@ const players = computed(() => {
 
 .playerUsername {
     font-weight: 600;
+    font-size: 1.25rem;
 
     span {
         font-weight: 500;
@@ -166,26 +129,25 @@ const players = computed(() => {
     display: flex;
     gap: 0.15rem;
     margin-left: auto;
-    font-size: 1.85rem;
+    font-size: 1.5rem;
 
     .dolarSign {
-        color: green;
+        color: rgb(57, 126, 57);
     }
 }
 
 .cards {
     position: relative;
     display: flex;
-    height: 110px;
+    height: 90px;
 
     .info {
-        position: absolute;
-        inset: 0;
-        top: 20px;
+        margin-block: 1rem;
+        width: 100%;
         display: grid;
         place-items: center;
-        font-size: 1.5rem;
-        color: rgba(32, 32, 32, 0.493);
+        font-size: 1.15rem;
+        color: #2020207e;
         font-weight: bold;
         background-color: rgba(129, 129, 129, 0.322);
         border-radius: 0.25rem;
