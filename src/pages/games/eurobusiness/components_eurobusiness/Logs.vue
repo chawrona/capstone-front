@@ -20,7 +20,7 @@ const replaceLogMessage = (log) => {
 
     log = log.replace(
         "$",
-        `<span style="font-weight: 600; color: green">$</span>`,
+        `<span style="font-weight: 700; color: green; font-family:sans-serif;">$</span>`,
     );
 
     return log;
@@ -44,24 +44,27 @@ const newLogs = computed(() => {
 <template>
     <div class="logs">
         <h1 class="logsTitle">Historia gry</h1>
-        <template v-for="(log, index) in newLogs" :key="index + log">
-            <div v-if="log === 'hr'" class="hr">
-                <div class="line"></div>
-                <div class="text">Nowa tura</div>
-                <div class="line"></div>
-            </div>
-            <div
-                v-else
-                class="log"
-                :style="`opacity: ${1 - (newLogs.length - 1 - index) * 0.025}`"
-                v-html="replaceLogMessage(log)"
-            />
-        </template>
+        <div class="log-wrap">
+            <template v-for="(log, index) in newLogs" :key="index + log">
+                <div v-if="log === 'hr'" class="hr">
+                    <div class="line"></div>
+                    <div class="text">Nowa tura</div>
+                    <div class="line"></div>
+                </div>
+                <div
+                    v-else
+                    class="log"
+                    :style="`opacity: ${1 - (newLogs.length - 1 - index) * 0.025}`"
+                    v-html="replaceLogMessage(log)"
+                />
+            </template>
+        </div>
     </div>
 </template>
 
 <style scoped lang="scss">
 .logs {
+    position: relative;
     display: flex;
     flex-direction: column;
     width: 400px;
@@ -74,6 +77,19 @@ const newLogs = computed(() => {
     gap: 0.75rem;
     line-height: 1.4;
     overflow: hidden;
+}
+
+.log-wrap {
+    position: absolute;
+    bottom: 2rem;
+    display: flex;
+    top: 5rem;
+    overflow: hidden;
+    left: 1.5rem;
+    right: 1.5rem;
+    flex-direction: column;
+    justify-content: end;
+    gap: 0.75rem;
 }
 
 .logsTitle {

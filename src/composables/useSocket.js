@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useToast } from "vue-toast-notification";
 
+import { soundBus } from "../audio/soundBus";
 import { useAppStore } from "../store/useAppStore";
 import getUserId from "./getUserId";
 
@@ -24,7 +25,6 @@ export default function useSocket() {
         reconnectAttemptCount.value = 0;
         store.setSocket(socket);
         store.setUserId(userId);
-
         store.emit("initialRequest", {
             lobbyId: route.params.id,
             username: localStorage.getItem("username"),
@@ -32,6 +32,7 @@ export default function useSocket() {
     });
 
     socket.on("homepage", (payload) => {
+        soundBus.stopMusic();
         router.push("/");
         store.setLoading(false);
 
@@ -45,7 +46,7 @@ export default function useSocket() {
     });
 
     socket.on("lobby", (lobbyId) => {
-        console.log("LOBBY PRZEKIEROWANIE: ", lobbyId);
+        soundBus.stopMusic();
         store.setLoading(true);
         setTimeout(() => {
             router.push(`/${lobbyId}`);
@@ -53,6 +54,7 @@ export default function useSocket() {
     });
 
     socket.on("game", (data) => {
+        soundBus.stopMusic();
         store.setLoading(true);
         setTimeout(() => {
             router.push(`/${data.lobbyId}/${data.gameTitle}`);

@@ -438,7 +438,7 @@ const getPublicIdFromFieldFinish = (field) => {
     width: 100%;
     height: 100vh;
     overflow: hidden;
-    background-image: url("../../../assets/grain.png");
+    background-image: url("../../grain.png");
     background: cover;
     background-repeat: no-repeat;
     background-position: center;

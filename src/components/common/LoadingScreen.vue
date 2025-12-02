@@ -22,11 +22,7 @@ const { isLoading } = storeToRefs(store);
     z-index: 99999999;
     display: flex;
     align-items: center;
-    background: radial-gradient(
-        circle,
-        rgba(44, 25, 1, 1) 0%,
-        rgba(23, 14, 1, 1) 80%
-    );
+    background: radial-gradient(circle, #2c1901 0%, rgba(23, 14, 1, 1) 80%);
     flex-direction: column;
     gap: 1rem;
     inset: 0;

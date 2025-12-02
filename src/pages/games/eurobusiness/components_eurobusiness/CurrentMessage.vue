@@ -1,15 +1,28 @@
 <script setup>
 import Timer from "@/assets/games/gameAssets/eurobusiness/timer.png";
 
+import { usePageSounds } from "../../../../composables/usePageSounds";
 import actions from "../actions/actions";
 const props = defineProps([
     "currentMessage",
     "playersData",
     "time",
     "endTurn",
+    "payTax",
+    "payIncomeTax",
     "availableActions",
     "yourTurn",
+    "refuseToBuyBuilding",
+    "buyBuilding",
+    "payJail",
 ]);
+
+usePageSounds({
+    effects: [
+        { name: "endTurn", url: "/sounds/endTurn.mp3" },
+        { name: "pay", url: "/sounds/pay.mp3" },
+    ],
+});
 
 const replaceLogMessage = (message) => {
     const players = props.playersData.map((player) => [
@@ -20,7 +33,7 @@ const replaceLogMessage = (message) => {
     for (const player of players) {
         message = message.replace(
             player[0],
-            `<span style="font-weight: bold; color: ${player[1]}">${player[0]}</span>`,
+            `<span style="font-weight: bold; color: ${player[1]}">${player[0]}</span><br>`,
         );
     }
 
@@ -33,27 +46,72 @@ const replaceLogMessage = (message) => {
         <h2 class="panel-title">Aktualna akcja:</h2>
         <h2 class="timer">
             <img :src="Timer" class="icon" />
-            <span class="time">{{ props.time }}</span>
+            <span class="time">{{
+                props.time < 10 ? "00:0" + props.time : "00:" + props.time
+            }}</span>
         </h2>
         <h1 class="message" v-html="replaceLogMessage(props.currentMessage)" />
         <button
-            v-if="availableActions.includes(actions.endTurn)"
+            v-if="availableActions.includes(actions.endTurn) && yourTurn"
             class="eurobusiness-button"
             @click="endTurn"
         >
             Zakończ turę
         </button>
+        <button
+            v-if="availableActions.includes(actions.payTax) && yourTurn"
+            class="eurobusiness-button tax-button"
+            @click="payTax"
+        >
+            Zapłać podatek
+        </button>
+        <button
+            v-if="availableActions.includes(actions.payIncomeTax) && yourTurn"
+            class="eurobusiness-button incomeTax-button"
+            @click="payIncomeTax"
+        >
+            Zapłać podatek dochodowy
+        </button>
+        <button
+            v-if="availableActions.includes(actions.payJail) && yourTurn"
+            class="eurobusiness-button jail-button"
+            @click="payJail"
+        >
+            Zapłać za wyjście z więzienia
+        </button>
+        <div>
+            <button
+                v-if="
+                    availableActions.includes(actions.buyBuilding) && yourTurn
+                "
+                class="eurobusiness-button buy-button"
+                @click="buyBuilding"
+            >
+                Kup budynek
+            </button>
+            <button
+                v-if="
+                    availableActions.includes(actions.refuseToBuyBuilding) &&
+                    yourTurn
+                "
+                class="eurobusiness-button auction-button"
+                @click="refuseToBuyBuilding"
+            >
+                Licytacja
+            </button>
+        </div>
     </div>
 </template>
 
 <style scoped lang="scss">
 .current-message {
     position: relative;
-    height: 250px;
+    height: 235px;
     width: 100%;
     border-radius: 0.25rem;
     background: linear-gradient(180deg, #fcfaf5, #e2d7c4);
     padding: 1.5rem 1.15rem;
+    padding-top: 0.25rem;
 
     font-family: "Open Sans";
     display: flex;
@@ -80,7 +138,7 @@ const replaceLogMessage = (message) => {
     top: 1.15rem;
     left: 1.15rem;
     font-weight: normal;
-    font-size: 1.5rem;
+    font-size: 1.15rem;
     color: #111111;
 }
 
@@ -109,6 +167,35 @@ const replaceLogMessage = (message) => {
     position: absolute;
     bottom: 0.75rem;
     left: 1rem;
+}
+
+.incomeTax-button,
+.tax-button,
+.buy-button {
+    background-color: #138b03;
+    &:hover {
+        background-color: #1da10b;
+    }
+}
+
+.auction-button {
+    left: 170px;
+    background-color: #d30303;
+    &:hover {
+        background-color: #f02f2f;
+    }
+}
+
+.jail-button {
+    background-color: #4b4b4b;
+    &:hover {
+        background-color: #5c5c5c;
+    }
+}
+</style>
+
+<style>
+.eurobusiness-button {
     border-radius: 0.5rem;
     padding: 0.75rem 1.15rem;
     background-color: #f06800;

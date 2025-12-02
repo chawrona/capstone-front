@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 
+import { soundBus } from "@/audio/soundBus";
+
 const routes = [
     {
         component: () => import("@/pages/HomePage.vue"),
@@ -26,6 +28,11 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(),
     routes,
+});
+
+router.beforeEach(() => {
+    soundBus.unloadAll();
+    soundBus.stopMusic();
 });
 
 export default router;

@@ -14,7 +14,7 @@ export function useGameData() {
     const yourPublicId = ref(null);
     const currentMessage = ref(null);
     const logs = ref(["Brak logów"]);
-    const time = ref("01:00");
+    const time = ref(59);
 
     const eventsMap = {
         availableActions,

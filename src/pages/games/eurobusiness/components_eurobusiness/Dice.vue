@@ -5,7 +5,7 @@ const props = defineProps({
     color: { default: "#000000", type: String },
     newValue: { default: 1, type: Number },
     size: { default: 65, type: Number },
-    trigger: { default: 1, type: Number }
+    trigger: { default: 1, type: Number },
 });
 
 const lastValue = ref(1);
