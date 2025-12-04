@@ -3,7 +3,16 @@ import { computed } from "vue";
 
 import User from "@/assets/user.png";
 
-const props = defineProps(["playersData", "yourPublicId", "gameMap"]);
+import actions from "../actions/actions";
+
+const props = defineProps([
+    "playersData",
+    "yourPublicId",
+    "gameMap",
+    "openMortgagePropertyCardDialog",
+    "availableActions",
+    "yourTurn",
+]);
 
 const players = computed(() => {
     if (props.playersData.length === 4) return props.playersData;
@@ -56,26 +65,67 @@ const players = computed(() => {
             </header>
             <section class="cards">
                 <div class="info">
-                    <div v-if="!player.ownerships" class="noCards">
+                    <div
+                        v-if="
+                            !player.ownerships ||
+                            player.ownerships?.length === 0
+                        "
+                        class="noCards"
+                    >
                         Karty własności
                     </div>
                     <div
-                        v-if="player.ownerships"
+                        v-else
                         class="ownerships"
                         :class="{
                             lessThan9: player.ownerships.length < 9,
                             equal8: player.ownerships.length === 8,
                             lessThan17: player.ownerships.length < 17,
                             lessThan22: player.ownerships.length < 22,
+                            noAction:
+                                !availableActions.includes(
+                                    actions.redeemPropertyCard,
+                                ) && yourPublicId === player.publicId,
+                            noHover:
+                                !yourTurn || yourPublicId !== player.publicId,
                         }"
                     >
                         <div
-                            v-for="index in player.ownerships"
+                            v-for="index in player.ownerships.sort(
+                                (a, b) => a - b,
+                            )"
                             :key="index"
                             class="tileCard"
                             :style="`--bg: ${props.gameMap[index].color}`"
+                            :class="{
+                                mortgaged:
+                                    player.mortgagedCards.includes(index),
+                            }"
+                            @click="
+                                () => {
+                                    if (
+                                        yourPublicId !== player.publicId ||
+                                        !yourTurn
+                                    )
+                                        return;
+                                    openMortgagePropertyCardDialog(
+                                        gameMap[index],
+                                    );
+                                }
+                            "
                         >
-                            {{ props.gameMap[index].setPosition }}
+                            <div class="top"></div>
+                            <div class="bottom">
+                                <span
+                                    v-if="player.mortgagedCards.includes(index)"
+                                >
+                                    Z
+                                </span>
+                                <span v-else>
+                                    {{ props.gameMap[index].rent
+                                    }}<span class="dolar">$</span>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -202,23 +252,60 @@ const players = computed(() => {
     flex-wrap: wrap;
     gap: 0.2rem;
 
+    &.noAction .tileCard {
+        cursor: not-allowed;
+
+        opacity: 0.5;
+
+        &:hover {
+            filter: none;
+        }
+    }
+
+    &.noHover .tileCard {
+        cursor: not-allowed;
+        &:hover {
+            filter: none;
+        }
+    }
+
     .tileCard {
         height: 30px;
         width: 20px;
         border-radius: 0.25rem;
-        display: grid;
-        place-items: center;
+        border: 1px solid #000000;
+
+        overflow: hidden;
+        cursor: pointer;
+
         font-size: 0.75rem;
         color: black;
         box-shadow:
             rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
             rgba(0, 0, 0, 0.3) 0px 30px 60px -30px,
             rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
-        background: linear-gradient(
-            90deg,
-            var(--bg) 0%,
-            hsl(from var(--bg) h s calc(l * 0.9)) 100%
-        );
+
+        &.mortgaged {
+            border-color: rgb(117, 106, 1);
+        }
+
+        .top {
+            border-bottom: 1px solid black;
+            background-color: var(--bg);
+            height: 14px;
+            width: 100%;
+        }
+
+        .bottom {
+            display: grid;
+            place-items: center;
+            height: 16px;
+            background-color: white;
+        }
+
+        &:hover {
+            filter: brightness(0.85);
+        }
     }
 
     &.lessThan22 {
@@ -227,9 +314,34 @@ const players = computed(() => {
         width: 100%;
         gap: 0.2rem;
         .tileCard {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             height: 20px;
             width: 48px;
+            display: flex;
+
+            border-radius: 0.15rem;
+
+            &.mortgaged {
+                .top {
+                    border-color: rgb(117, 106, 1);
+                }
+            }
+            .top {
+                // height: ;
+                height: 100%;
+                border-bottom: none;
+                border-right: 1px solid;
+                width: 12px;
+            }
+            .bottom {
+                width: 34px;
+                height: 100%;
+                font-weight: 700;
+
+                .dolar {
+                    font-size: 0.75rem;
+                }
+            }
         }
     }
 
@@ -239,8 +351,26 @@ const players = computed(() => {
         width: 100%;
         gap: 0.3rem;
         .tileCard {
+            display: block;
             height: 30px;
             width: 40px;
+            border-radius: 0.15rem;
+            &.mortgaged {
+                .top {
+                    border-color: rgb(117, 106, 1);
+                }
+            }
+
+            .top {
+                height: 8px;
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid;
+            }
+            .bottom {
+                width: 100%;
+                height: 20px;
+            }
         }
     }
 
@@ -248,13 +378,31 @@ const players = computed(() => {
         justify-content: start;
         width: 100%;
         .tileCard {
-            height: 60px;
+            display: block;
+            height: 56px;
             width: 40px;
+            border-radius: 0.15rem;
+            &.mortgaged {
+                .top {
+                    border-color: rgb(117, 106, 1);
+                }
+            }
+            .top {
+                height: 15px;
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid;
+            }
+            .bottom {
+                height: 39px;
+                width: 100%;
+            }
         }
     }
+}
 
-    &.equal8 {
-        justify-content: space-evenly;
-    }
+.dolar {
+    font-family: sans-serif;
+    color: green;
 }
 </style>

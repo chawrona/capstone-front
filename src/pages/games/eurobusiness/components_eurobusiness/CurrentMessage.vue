@@ -15,6 +15,7 @@ const props = defineProps([
     "refuseToBuyBuilding",
     "buyBuilding",
     "payJail",
+    "payRent",
 ]);
 
 usePageSounds({
@@ -99,6 +100,13 @@ const replaceLogMessage = (message) => {
             >
                 Licytacja
             </button>
+            <button
+                v-if="availableActions.includes(actions.payRent) && yourTurn"
+                class="eurobusiness-button payRent-button"
+                @click="payRent"
+            >
+                Zapłać czynsz
+            </button>
         </div>
     </div>
 </template>
@@ -169,8 +177,6 @@ const replaceLogMessage = (message) => {
     left: 1rem;
 }
 
-.incomeTax-button,
-.tax-button,
 .buy-button {
     background-color: #138b03;
     &:hover {
@@ -186,10 +192,13 @@ const replaceLogMessage = (message) => {
     }
 }
 
+.incomeTax-button,
+.tax-button,
+.payRent-button,
 .jail-button {
-    background-color: #4b4b4b;
+    background-color: #504e5a;
     &:hover {
-        background-color: #5c5c5c;
+        background-color: #3a3841;
     }
 }
 </style>

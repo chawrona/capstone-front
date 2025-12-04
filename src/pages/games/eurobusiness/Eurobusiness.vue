@@ -16,6 +16,7 @@ import CurrentMessage from "./components_eurobusiness/CurrentMessage.vue";
 import Dice from "./components_eurobusiness/Dice.vue";
 import GameMap from "./components_eurobusiness/GameMap.vue";
 import Logs from "./components_eurobusiness/Logs.vue";
+import MortgagePropertyCardDialog from "./components_eurobusiness/MortgagePropertyCardDialog.vue";
 import PlayersData from "./components_eurobusiness/PlayersData.vue";
 import { useGameData } from "./composables_eurobusiness/useGameData";
 import { useGameDialogs } from "./composables_eurobusiness/useGameDialogs";
@@ -39,6 +40,24 @@ const {
 
 const { createInfo } = useGameInfo();
 
+const tilesOwnedBySomeone = computed(() => {
+    const tiles = {};
+
+    for (const player of playersData.value) {
+        player.ownerships.forEach((ownership) => {
+            tiles[ownership] = player.color.hex;
+        });
+    }
+
+    return tiles;
+});
+
+const currentUser = computed(() => {
+    return playersData.value.find(
+        (player) => player.publicId === yourPublicId.value,
+    );
+});
+
 const {
     auction,
     auctionCardDialogOpen,
@@ -48,16 +67,22 @@ const {
     communityCard,
     communityCardDialogOpen,
     dialogsOpen,
-} = useGameDialogs();
+    mortgagePropertyCardDialogOpen,
+    openMortgagePropertyCardDialog,
+    propertyCard,
+} = useGameDialogs(availableActions);
 
 const {
     buyBuilding,
     endTurn,
+    mortgagePropertyCard,
     payIncomeTax,
     payJail,
+    payRent,
     payTax,
     pickChanceCard,
     pickCommunityCard,
+    redeemPropertyCard,
     refuseToBuyBuilding,
     rollDice,
     useOutOfJailCard,
@@ -98,12 +123,17 @@ usePageSounds({
                     :buy-building="buyBuilding"
                     :refuse-to-buy-building="refuseToBuyBuilding"
                     :pay-jail="payJail"
+                    :pay-rent="payRent"
                 />
                 <PlayersData
                     :players-data="playersData"
                     :your-public-id="yourPublicId"
                     :your-turn="yourTurn"
                     :game-map="gameMap"
+                    :open-mortgage-property-card-dialog="
+                        openMortgagePropertyCardDialog
+                    "
+                    :available-actions="availableActions"
                 />
             </div>
 
@@ -120,6 +150,7 @@ usePageSounds({
                 :your-public-id="yourPublicId"
                 :use-out-of-jail-card="useOutOfJailCard"
                 :game-map="gameMap"
+                :tiles-owned-by-someone="tilesOwnedBySomeone"
             />
 
             <ChanceCardDialog
@@ -131,6 +162,15 @@ usePageSounds({
                 :community-card="communityCard"
                 :close-dialogs="closeDialogs"
                 :community-card-dialog-open="communityCardDialogOpen"
+            />
+
+            <MortgagePropertyCardDialog
+                v-if="mortgagePropertyCardDialogOpen"
+                :property-card="propertyCard"
+                :close-dialogs="closeDialogs"
+                :mortgage-property-card="mortgagePropertyCard"
+                :current-user="currentUser"
+                :redeem-property-card="redeemPropertyCard"
             />
 
             <!-- Logi -->

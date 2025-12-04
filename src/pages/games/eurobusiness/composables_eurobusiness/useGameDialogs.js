@@ -2,7 +2,9 @@ import { ref, onMounted, onBeforeUnmount, computed } from "vue";
 
 import { useAppStore } from "@/store/useAppStore";
 
-export function useGameDialogs() {
+import actions from "../actions/actions";
+
+export function useGameDialogs(availableActions) {
     const store = useAppStore();
 
     const chanceCardDialogOpen = ref(false);
@@ -14,17 +16,31 @@ export function useGameDialogs() {
     const auctionCardDialogOpen = ref(false);
     const auction = ref(null);
 
+    const mortgagePropertyCardDialogOpen = ref(false);
+    const propertyCard = ref(null);
+
+    const openMortgagePropertyCardDialog = (card) => {
+        if (
+            !availableActions.value.includes(actions.mortgagePropertyCard) &&
+            !availableActions.value.includes(actions.redeemPropertyCard)
+        )
+            return;
+
+        mortgagePropertyCardDialogOpen.value = true;
+        propertyCard.value = card;
+    };
+
     const dialogsOpen = computed(() => {
         return (
             auctionCardDialogOpen.value ||
             communityCardDialogOpen.value ||
-            chanceCardDialogOpen.value
+            chanceCardDialogOpen.value ||
+            mortgagePropertyCardDialogOpen.value
         );
     });
 
     const closeDialogs = () => {
-        console.log("Closed");
-
+        mortgagePropertyCardDialogOpen.value = false;
         chanceCardDialogOpen.value = false;
         communityCardDialogOpen.value = false;
         auctionCardDialogOpen.value = false;
@@ -69,5 +85,8 @@ export function useGameDialogs() {
         communityCard,
         communityCardDialogOpen,
         dialogsOpen,
+        mortgagePropertyCardDialogOpen,
+        openMortgagePropertyCardDialog,
+        propertyCard,
     };
 }

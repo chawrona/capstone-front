@@ -20,6 +20,7 @@ const props = defineProps([
     "yourPublicId",
     "useOutOfJailCard",
     "gameMap",
+    "tilesOwnedBySomeone",
 ]);
 
 usePageSounds({
@@ -60,9 +61,18 @@ const getCellName = (number) => {
     return "";
 };
 
+const isTileOwned = (position) => {
+    return Boolean(
+        props.tilesOwnedBySomeone[position] &&
+            props.gameMap[position].type === "Budynek",
+    );
+};
+
 const getCellPrice = (number) => {
     const tile = props.gameMap[number - 1];
-    if (tile.type === "Budynek") return tile.price + "$";
+    if (tile.type === "Budynek") {
+        return (isTileOwned(number - 1) ? tile.rent : tile.price) + "$";
+    }
 
     return "";
 };
@@ -142,8 +152,9 @@ const getCellPrice = (number) => {
                 cells31to39: number - 1 > 30 && number - 1 < 40,
                 [`cell${number - 1}`]: true,
                 building: gameMap[number - 1].type === 'Budynek',
+                isTileOwned: isTileOwned(number - 1),
             }"
-            :style="`grid-area: cell${number - 1}; ${getBuildingColor(number)}`"
+            :style="`grid-area: cell${number - 1}; ${getBuildingColor(number)}; --backgroundIfOwned: ${tilesOwnedBySomeone[number - 1]}`"
         >
             <p class="cell-name">{{ getCellName(number) }}</p>
             <p class="cell-price">{{ getCellPrice(number) }}</p>
@@ -362,6 +373,14 @@ const getCellPrice = (number) => {
     }
     &.cell39 {
         border-left: none;
+    }
+
+    &.isTileOwned {
+        background-color: color-mix(
+            in srgb,
+            var(--backgroundIfOwned) 20%,
+            white
+        );
     }
 }
 

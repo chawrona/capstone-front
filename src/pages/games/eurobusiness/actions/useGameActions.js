@@ -8,7 +8,12 @@ export function useGameActions(availableActions, dialogsOpen) {
     const cooldowns = {};
 
     const canEmit = (action) => {
-        if (dialogsOpen.value) return true;
+        if (
+            dialogsOpen.value &&
+            action !== actions.mortgagePropertyCard &&
+            action !== actions.redeemPropertyCard
+        )
+            return true;
         if (!availableActions.value.includes(action)) return true;
 
         const now = Date.now();
@@ -48,6 +53,12 @@ export function useGameActions(availableActions, dialogsOpen) {
         soundBus.playEffect("pay");
     };
 
+    const payRent = () => {
+        if (canEmit(actions.payRent)) return;
+        store.emit("gameData", { eventName: "payRent" });
+        soundBus.playEffect("pay");
+    };
+
     const payIncomeTax = () => {
         if (canEmit(actions.payIncomeTax)) return;
         store.emit("gameData", { eventName: "payIncomeTax" });
@@ -78,14 +89,35 @@ export function useGameActions(availableActions, dialogsOpen) {
         soundBus.playEffect("pay");
     };
 
+    const mortgagePropertyCard = (card) => {
+        if (canEmit(actions.mortgagePropertyCard)) return;
+        store.emit("gameData", {
+            data: card,
+            eventName: "mortgagePropertyCard",
+        });
+        soundBus.playEffect("pay");
+    };
+
+    const redeemPropertyCard = (card) => {
+        if (canEmit(actions.redeemPropertyCard)) return;
+        store.emit("gameData", {
+            data: card,
+            eventName: "redeemPropertyCard",
+        });
+        soundBus.playEffect("pay");
+    };
+
     return {
         buyBuilding,
         endTurn,
+        mortgagePropertyCard,
         payIncomeTax,
         payJail,
+        payRent,
         payTax,
         pickChanceCard,
         pickCommunityCard,
+        redeemPropertyCard,
         refuseToBuyBuilding,
         rollDice,
         useOutOfJailCard,

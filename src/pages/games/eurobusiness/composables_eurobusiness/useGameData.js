@@ -15,6 +15,7 @@ export function useGameData() {
     const currentMessage = ref(null);
     const logs = ref(["Brak logów"]);
     const time = ref(59);
+    const intervalId = ref(null);
 
     const eventsMap = {
         availableActions,
@@ -39,6 +40,10 @@ export function useGameData() {
                 }
             }
 
+            intervalId.value = setInterval(() => {
+                time.value = !time.value ? 0 : time.value - 1;
+            }, 1000);
+
             store.setLoading(false);
         });
 
@@ -59,6 +64,8 @@ export function useGameData() {
         for (const eventName in eventsMap) {
             store.socket.off(eventName);
         }
+
+        clearInterval(intervalId.value);
     });
 
     return {

@@ -50,12 +50,6 @@ const props = defineProps([
         rgba(0, 0, 0, 0.32) 0px 12px 12px;
 }
 
-.chance-card .card-title {
-    font-size: 3rem;
-    line-height: 1;
-    margin-bottom: 0;
-}
-
 .chance-card .card-content {
     font-size: 2.25rem;
     margin-bottom: 0.25rem;
