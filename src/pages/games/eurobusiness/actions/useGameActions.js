@@ -8,89 +8,124 @@ export function useGameActions(availableActions, dialogsOpen) {
     const cooldowns = {};
 
     const canEmit = (action) => {
+        console.log(1);
+        console.log(
+            "TEST 1",
+            action,
+            dialogsOpen.value,
+            action !== actions.mortgagePropertyCard,
+            action !== actions.redeemPropertyCard,
+        );
+
         if (
             dialogsOpen.value &&
             action !== actions.mortgagePropertyCard &&
             action !== actions.redeemPropertyCard
         )
             return true;
+        console.log(2);
+
+        console.log("TEST 2", availableActions.value, action);
+
         if (!availableActions.value.includes(action)) return true;
+        console.log(3);
 
         const now = Date.now();
-        if (cooldowns[action] && now - cooldowns[action] < 1000) return true;
+        if (cooldowns[action] && now - cooldowns[action] < 500) return false;
 
         cooldowns[action] = now;
-        return false;
+        return true;
     };
 
     const rollDice = () => {
-        if (canEmit(actions.rollDice)) return;
+        if (!canEmit(actions.rollDice)) return;
         store.emit("gameData", { eventName: "rollDice" });
         soundBus.playEffect("roll");
     };
 
     const endTurn = () => {
-        if (canEmit(actions.endTurn)) return;
+        if (!canEmit(actions.endTurn)) return;
         store.emit("gameData", { eventName: "endTurn" });
         soundBus.playEffect("endTurn");
     };
 
     const pickCommunityCard = () => {
-        if (canEmit(actions.pickCommunityCard)) return;
+        if (!canEmit(actions.pickCommunityCard)) return;
         store.emit("gameData", { eventName: "pickCommunityCard" });
         soundBus.playEffect("drawCard");
     };
 
     const pickChanceCard = () => {
-        if (canEmit(actions.pickChanceCard)) return;
+        if (!canEmit(actions.pickChanceCard)) return;
         store.emit("gameData", { eventName: "pickChanceCard" });
         soundBus.playEffect("drawCard");
     };
 
     const payTax = () => {
-        if (canEmit(actions.payTax)) return;
+        if (!canEmit(actions.payTax)) return;
         store.emit("gameData", { eventName: "payTax" });
         soundBus.playEffect("pay");
     };
 
     const payRent = () => {
-        if (canEmit(actions.payRent)) return;
+        if (!canEmit(actions.payRent)) return;
         store.emit("gameData", { eventName: "payRent" });
         soundBus.playEffect("pay");
     };
 
     const payIncomeTax = () => {
-        if (canEmit(actions.payIncomeTax)) return;
+        if (!canEmit(actions.payIncomeTax)) return;
         store.emit("gameData", { eventName: "payIncomeTax" });
         soundBus.playEffect("pay");
     };
 
     const buyBuilding = () => {
-        if (canEmit(actions.buyBuilding)) return;
+        if (!canEmit(actions.buyBuilding)) return;
         store.emit("gameData", { eventName: "buyBuilding" });
         soundBus.playEffect("pay");
     };
 
     const refuseToBuyBuilding = () => {
-        if (canEmit(actions.refuseToBuyBuilding)) return;
+        if (!canEmit(actions.refuseToBuyBuilding)) return;
         store.emit("gameData", { eventName: "refuseToBuyBuilding" });
         soundBus.playEffect("pay");
     };
 
+    const bid = (bidIncrement) => {
+        console.log("XD");
+
+        if (!canEmit(actions.auction)) return;
+        console.log("XD");
+
+        store.emit("gameData", {
+            data: bidIncrement,
+            eventName: "auction",
+        });
+        soundBus.playEffect("pay");
+    };
+
+    const end = () => {
+        if (!canEmit(actions.auction)) return;
+        store.emit("gameData", {
+            eventName: "endAuction",
+        });
+        soundBus.playEffect("pay");
+    };
+
     const payJail = () => {
-        if (canEmit(actions.payJail)) return;
+        if (!canEmit(actions.payJail)) return;
         store.emit("gameData", { eventName: "payJail" });
         soundBus.playEffect("pay");
     };
 
     const useOutOfJailCard = () => {
-        if (canEmit(actions.payJail)) return;
+        if (!canEmit(actions.payJail)) return;
         store.emit("gameData", { eventName: "useOutOfJailCard" });
         soundBus.playEffect("pay");
     };
 
     const mortgagePropertyCard = (card) => {
-        if (canEmit(actions.mortgagePropertyCard)) return;
+        if (!canEmit(actions.mortgagePropertyCard)) return;
         store.emit("gameData", {
             data: card,
             eventName: "mortgagePropertyCard",
@@ -99,7 +134,7 @@ export function useGameActions(availableActions, dialogsOpen) {
     };
 
     const redeemPropertyCard = (card) => {
-        if (canEmit(actions.redeemPropertyCard)) return;
+        if (!canEmit(actions.redeemPropertyCard)) return;
         store.emit("gameData", {
             data: card,
             eventName: "redeemPropertyCard",
@@ -108,7 +143,9 @@ export function useGameActions(availableActions, dialogsOpen) {
     };
 
     return {
+        bid,
         buyBuilding,
+        end,
         endTurn,
         mortgagePropertyCard,
         payIncomeTax,

@@ -53,6 +53,10 @@ export function useGameData() {
             });
         }
 
+        store.socket.on("endGame", () => {
+            alert("Koniec gry");
+        });
+
         store.emit("gameData", { eventName: "gameDataRequest" });
     });
 

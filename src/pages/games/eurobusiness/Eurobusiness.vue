@@ -10,6 +10,7 @@ import { useGamePause } from "../composables_games/useGamePause";
 import { useGameResize } from "../composables_games/useGameResize";
 import actions from "./actions/actions";
 import { useGameActions } from "./actions/useGameActions";
+import AuctionDialog from "./components_eurobusiness/AuctionDialog.vue";
 import ChanceCardDialog from "./components_eurobusiness/ChanceCardDialog.vue";
 import CommunityCardDialog from "./components_eurobusiness/CommunityCardDialog.vue";
 import CurrentMessage from "./components_eurobusiness/CurrentMessage.vue";
@@ -52,7 +53,7 @@ const tilesOwnedBySomeone = computed(() => {
     return tiles;
 });
 
-const currentUser = computed(() => {
+const currentPlayer = computed(() => {
     return playersData.value.find(
         (player) => player.publicId === yourPublicId.value,
     );
@@ -73,7 +74,9 @@ const {
 } = useGameDialogs(availableActions);
 
 const {
+    bid,
     buyBuilding,
+    end,
     endTurn,
     mortgagePropertyCard,
     payIncomeTax,
@@ -93,6 +96,18 @@ const { isPaused } = useGamePause();
 usePageSounds({
     music: [{ name: "soundtrack", url: SOUNDTRACK_URL }],
 });
+
+// TESTY
+// const kasa = () => {
+//     store.emit("gameData", { eventName: "test_kasa_0"});
+// }
+// const kasa2 = () => {
+//     store.emit("gameData", { eventName: "test_kasa_100_wiecej"});
+// }
+
+// const podatek = () => {
+//     store.emit("gameData", { eventName: "test_podatek" });
+// }
 </script>
 
 <template>
@@ -125,6 +140,9 @@ usePageSounds({
                     :pay-jail="payJail"
                     :pay-rent="payRent"
                 />
+                <!-- <button @click="kasa">kasa 0</button>
+                <button @click="kasa2">kasa +100</button>
+                <button @click="podatek">Wywołaj event podatku</button> -->
                 <PlayersData
                     :players-data="playersData"
                     :your-public-id="yourPublicId"
@@ -169,8 +187,17 @@ usePageSounds({
                 :property-card="propertyCard"
                 :close-dialogs="closeDialogs"
                 :mortgage-property-card="mortgagePropertyCard"
-                :current-user="currentUser"
+                :current-player="currentPlayer"
                 :redeem-property-card="redeemPropertyCard"
+            />
+
+            <AuctionDialog
+                v-if="auctionCardDialogOpen"
+                :auction="auction"
+                :bid="bid"
+                :end="end"
+                :players-data="playersData"
+                :current-player="currentPlayer"
             />
 
             <!-- Logi -->
@@ -239,14 +266,30 @@ usePageSounds({
     color: #ffffff;
     font-family: "Open sans";
 
-    font-size: 1.5rem;
+    font-size: clamp(0.25rem, 0rem + 1.25vw, 1.5rem);
 
-    padding: 0rem 1.5rem;
+    padding: 0rem clamp(0.75em, 0.45em + 1.5vw, 2.25em);
 
     box-shadow: 3px 2px 0px 2px #768aaf;
 
     .v-toast__icon {
         display: none;
     }
+
+    @media (width < 1200px) {
+        border-width: 2px;
+        border-radius: 0.25rem;
+        box-shadow: 2px 1px 0px 1px #768aaf;
+    }
+
+    @media (width < 800px) {
+        border-width: 1px;
+        border-radius: 0.15rem;
+        box-shadow: 1px 1px 0px 1px #768aaf;
+    }
+}
+
+.v-toast__item {
+    min-height: 1rem;
 }
 </style>

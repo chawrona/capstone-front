@@ -45,6 +45,7 @@ const replaceLogMessage = (message) => {
 <template>
     <div class="current-message" :class="{ yourTurn: props.yourTurn }">
         <h2 class="panel-title">Aktualna akcja:</h2>
+        <!-- <h2 class="panel-title">{{ availableActions }}</h2> -->
         <h2 class="timer">
             <img :src="Timer" class="icon" />
             <span class="time">{{
@@ -64,14 +65,14 @@ const replaceLogMessage = (message) => {
             class="eurobusiness-button tax-button"
             @click="payTax"
         >
-            Zapłać podatek
+            Zapłać podatek 75$
         </button>
         <button
             v-if="availableActions.includes(actions.payIncomeTax) && yourTurn"
             class="eurobusiness-button incomeTax-button"
             @click="payIncomeTax"
         >
-            Zapłać podatek dochodowy
+            Zapłać dochowody 150$
         </button>
         <button
             v-if="availableActions.includes(actions.payJail) && yourTurn"
