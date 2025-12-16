@@ -68,6 +68,7 @@ class SoundBus {
 
     // =============== MUSIC WITH CROSS-FADE ===============
     async playMusic(name, fadeDuration = 500) {
+        if (this.soundtrackPlaying.value) return;
         const next = this.music[name];
         if (!next) return;
         this.soundtrackPlaying.value = true;
@@ -122,6 +123,7 @@ class SoundBus {
     stopMusic() {
         if (this.currentMusic) {
             this.currentMusic.pause();
+            this.isSoundtrackNotPlaying.value = false;
         }
     }
 

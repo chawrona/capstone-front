@@ -8,13 +8,12 @@ import PauseScreen from "../../../components/common/PauseScreen.vue";
 import { usePageSounds } from "../../../composables/usePageSounds";
 import { useGamePause } from "../composables_games/useGamePause";
 import { useGameResize } from "../composables_games/useGameResize";
-import actions from "./actions/actions";
 import { useGameActions } from "./actions/useGameActions";
 import AuctionDialog from "./components_eurobusiness/AuctionDialog.vue";
 import ChanceCardDialog from "./components_eurobusiness/ChanceCardDialog.vue";
 import CommunityCardDialog from "./components_eurobusiness/CommunityCardDialog.vue";
 import CurrentMessage from "./components_eurobusiness/CurrentMessage.vue";
-import Dice from "./components_eurobusiness/Dice.vue";
+import EndGame from "./components_eurobusiness/EndGame.vue";
 import GameMap from "./components_eurobusiness/GameMap.vue";
 import Logs from "./components_eurobusiness/Logs.vue";
 import MortgagePropertyCardDialog from "./components_eurobusiness/MortgagePropertyCardDialog.vue";
@@ -22,13 +21,17 @@ import PlayersData from "./components_eurobusiness/PlayersData.vue";
 import { useGameData } from "./composables_eurobusiness/useGameData";
 import { useGameDialogs } from "./composables_eurobusiness/useGameDialogs";
 import useGameInfo from "./composables_eurobusiness/useGameInfo";
+import PlaySoundtrack from "../../../components/common/PlaySoundtrack.vue";
+import HouseDialog from "./components_eurobusiness/HouseDialog.vue";
 
 const store = useAppStore();
 const SOUNDTRACK_URL = "/sounds/eurobusiness_soundtrack.mp3";
 const { scale } = useGameResize();
+const { isPaused } = useGamePause();
 const {
     availableActions,
     currentMessage,
+    endGame,
     gameMap,
     logs,
     playersData,
@@ -37,7 +40,7 @@ const {
     time,
     yourPublicId,
     yourTurn,
-} = useGameData();
+} = useGameData(isPaused);
 
 const { createInfo } = useGameInfo();
 
@@ -71,6 +74,9 @@ const {
     mortgagePropertyCardDialogOpen,
     openMortgagePropertyCardDialog,
     propertyCard,
+    housesDialogOpen,
+    openHouseDialog,
+    houseIndex
 } = useGameDialogs(availableActions);
 
 const {
@@ -89,36 +95,25 @@ const {
     refuseToBuyBuilding,
     rollDice,
     useOutOfJailCard,
+    sellHouse,
+    buyHouse
 } = useGameActions(availableActions, dialogsOpen);
-
-const { isPaused } = useGamePause();
 
 usePageSounds({
     music: [{ name: "soundtrack", url: SOUNDTRACK_URL }],
 });
 
-// TESTY
-// const kasa = () => {
-//     store.emit("gameData", { eventName: "test_kasa_0"});
-// }
-// const kasa2 = () => {
-//     store.emit("gameData", { eventName: "test_kasa_100_wiecej"});
-// }
-
-// const podatek = () => {
-//     store.emit("gameData", { eventName: "test_podatek" });
-// }
 </script>
 
 <template>
     <div class="background">
-        <button
-            v-if="soundBus.isSoundtrackNotPlaying()"
-            @click="soundBus.resetSoundtrack(SOUNDTRACK_URL)"
-        >
-            Play Soundtrack
-        </button>
-        <PauseScreen v-if="gameData && isPaused" />
+        <PlaySoundtrack :url="SOUNDTRACK_URL" />
+        <PauseScreen v-if="gameMap && isPaused" />
+        <EndGame
+            v-if="endGame"
+            :end-game-data="endGame"
+            :players-data="playersData"
+        />
         <div
             v-if="gameMap"
             class="game"
@@ -140,9 +135,8 @@ usePageSounds({
                     :pay-jail="payJail"
                     :pay-rent="payRent"
                 />
-                <!-- <button @click="kasa">kasa 0</button>
-                <button @click="kasa2">kasa +100</button>
-                <button @click="podatek">Wywołaj event podatku</button> -->
+
+                <!-- <button @click="endGameButton">Wywołaj koniec gry</button> -->
                 <PlayersData
                     :players-data="playersData"
                     :your-public-id="yourPublicId"
@@ -169,6 +163,7 @@ usePageSounds({
                 :use-out-of-jail-card="useOutOfJailCard"
                 :game-map="gameMap"
                 :tiles-owned-by-someone="tilesOwnedBySomeone"
+                :open-house-dialog="openHouseDialog"
             />
 
             <ChanceCardDialog
@@ -189,13 +184,24 @@ usePageSounds({
                 :mortgage-property-card="mortgagePropertyCard"
                 :current-player="currentPlayer"
                 :redeem-property-card="redeemPropertyCard"
+                :players-data="playersData"
+            />
+
+            <HouseDialog
+                v-if="housesDialogOpen"
+                :house-index="houseIndex"
+                :close-dialogs="closeDialogs"
+                :property-card="gameMap[houseIndex]"
+                :current-player="currentPlayer"
+                :players-data="playersData"
+                :buy-house="buyHouse"
+                :sell-house="sellHouse"
             />
 
             <AuctionDialog
                 v-if="auctionCardDialogOpen"
                 :auction="auction"
                 :bid="bid"
-                :end="end"
                 :players-data="playersData"
                 :current-player="currentPlayer"
             />

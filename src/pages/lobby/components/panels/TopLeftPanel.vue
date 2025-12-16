@@ -12,6 +12,7 @@ import { useAppStore } from "../../../../store/useAppStore";
 import ChangeUserColorDialog from "../ChangeUserColorDialog.vue";
 import ChangeUsernameDialog from "../ChangeUsernameDialog.vue";
 import OptionButton from "../OptionButton.vue";
+import { soundBus } from "../../../../audio/soundBus";
 
 const props = defineProps([
     "currentUser",
@@ -41,6 +42,7 @@ const blockButtons = () => {
 const toggleReady = () => {
     if (blockButtons()) return;
     store.emit("toggleReady");
+        soundBus.playEffect("click");
 };
 
 const areColorDuplicatedOrNotSelected = computed(() => {
@@ -91,6 +93,7 @@ const isCorrentCountOfPlayers = computed(
 const handleGameStart = () => {
     if (!canStartTheGame.value) return;
     store.emit("gameStart");
+    soundBus.playEffect("click");
 };
 </script>
 

@@ -3,6 +3,7 @@ import { ref, watch, computed } from "vue";
 
 const props = defineProps({
     color: { default: "#000000", type: String },
+    colorBackground: { default: "#ffffff", type: String },
     newValue: { default: 1, type: Number },
     size: { default: 65, type: Number },
     trigger: { default: 1, type: Number },
@@ -95,6 +96,8 @@ watch(
                     width: `${size}px`,
                     height: `${size}px`,
                     borderRadius: `${styles.sideRadius}px`,
+                    backgroundColor: colorBackground,
+                    borderColor: colorBackground
                 }"
             >
                 <div

@@ -4,12 +4,23 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import Start from "@/assets/start_white.svg";
 import { useAppStore } from "@/store/useAppStore.js";
 
-import Dice from "../../../components/common/Dice.vue";
+import Dice from "../eurobusiness/components_eurobusiness/Dice.vue";
+import { usePageSounds } from "../../../composables/usePageSounds";
+import PlaySoundtrack from "../../../components/common/PlaySoundtrack.vue";
+import { soundBus } from "../../../audio/soundBus";
 
 const store = useAppStore();
 
 const gameData = ref(null);
 const players = ref(null);
+const SOUNDTRACK_URL = "/sounds/eurobusiness_soundtrack.mp3";
+usePageSounds({
+    music: [{ name: "soundtrack", url: SOUNDTRACK_URL }],
+    effects: [
+        { name: "roll", url: "/sounds/roll.mp3" },
+        { name: "click", url: "/sounds/click.mp3" },
+    ],
+});
 
 const mapBases = computed(() => {
     const noPlayer = {
@@ -178,10 +189,11 @@ onMounted(() => {
             gameData.value = data;
             store.setLoading(false);
 
-            isPaused.value = d.isPaused;
+            isPaused.value = data.isPaused;
 
             if (prevAction.value === "Rzut kością") {
                 trigger.value += 1;
+                soundBus.playEffect("roll");
                 hideRolled.value = true;
 
                 canRollAgain.value = false;
@@ -247,6 +259,7 @@ const pawnMovement = (pawnId) => {
         eventName: "pawnMovement",
         pawnId: pawnId,
     });
+    soundBus.playEffect("click");
 };
 
 const isPawnOnFinish = (field) => {
@@ -278,6 +291,7 @@ const getPublicIdFromFieldFinish = (field) => {
 <template>
     <div class="background">
         <div v-if="gameData && isPaused" class="paused"></div>
+        <PlaySoundtrack :url="SOUNDTRACK_URL" />
         <div
             v-if="gameData && players"
             class="game"
@@ -399,7 +413,7 @@ const getPublicIdFromFieldFinish = (field) => {
             </div>
 
             <div class="gameInfo" :class="{ myTurn: gameData.yourTurn }">
-                <h1 class="game-title">Chińczyk</h1>
+                
                 <h2 class="whos-turn" :class="{ 'opacity-0': hideRolled }">
                     {{ gameData.actionMessage }}
                 </h2>
@@ -412,18 +426,21 @@ const getPublicIdFromFieldFinish = (field) => {
                             hideRolled,
                     }"
                 >
-                    Wyrzucono: {{ gameData.diceThrowResult }}
+                    Wyrzucono {{ gameData.diceThrowResult }}
                 </h3>
 
                 <!-- <div class="dice"  @click="rollDice">
                     Rzuć kością
                 </div> -->
 
-                <Dice
-                    class="dice"
+                 <Dice
+                  class="dice"
                     :trigger="trigger"
                     :new-value="gameData.diceThrowResult"
-                    @click="rollDice"
+                    color="#ffffff"
+                    colorBackground="#2063f3"
+                     @click="rollDice"
+                     :size="80"
                 />
             </div>
         </div>
@@ -431,17 +448,23 @@ const getPublicIdFromFieldFinish = (field) => {
 </template>
 
 <style lang="scss" scoped>
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap");
+
 .background {
-    display: grid;
+     display: grid;
     place-items: center;
-    background-color: #e8f4fc;
     width: 100%;
     height: 100vh;
+    background-color: #0966a5;
+    background: linear-gradient(
+        180deg,
+        rgba(67, 164, 230, 1) 0%,
+        rgba(40, 143, 211, 1) 10%,
+        rgba(25, 119, 181, 1) 74%,
+        rgba(14, 96, 150, 1) 96%,
+        rgba(13, 89, 140, 1) 100%
+    );
     overflow: hidden;
-    background-image: url("../../grain.png");
-    background: cover;
-    background-repeat: no-repeat;
-    background-position: center;
 }
 
 .game {
@@ -458,6 +481,7 @@ const getPublicIdFromFieldFinish = (field) => {
 // Game Map
 
 .map {
+      border-radius: 0.5rem;
     --map-padding: 3rem;
     position: relative;
     width: 900px;
@@ -465,14 +489,9 @@ const getPublicIdFromFieldFinish = (field) => {
     background-color: blue;
     padding: 3rem;
     overflow: hidden;
-    border: 5px solid black;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-    border-radius: 4rem;
-    background-image: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 1) 0%,
-        rgba(230, 230, 230, 1) 100%
-    );
+
+    background: linear-gradient(180deg, #fcfaf5, #e2d7c4);
 
     .player-base {
         inset: var(--map-padding) auto auto var(--map-padding);
@@ -531,6 +550,7 @@ const getPublicIdFromFieldFinish = (field) => {
 }
 
 .dice {
+    cursor: pointer;
     margin-bottom: 6rem;
 }
 
@@ -634,52 +654,27 @@ const getPublicIdFromFieldFinish = (field) => {
 
 .gameInfo {
     width: 500px;
-    font-family: "Caveat Brush";
+   font-family: "Open sans";
     height: 900px;
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 2rem;
     position: relative;
-    border-radius: calc(2rem - 5px);
+
     transition: background 0.1s;
 
-    background: linear-gradient(
-        138deg,
-        rgba(70, 208, 250, 0.4) 0%,
-        rgba(109, 211, 242, 0.3) 27%,
-        rgba(157, 224, 245, 0.25) 56%,
-        rgba(141, 223, 247, 0.4) 75%,
-        rgba(103, 214, 248, 0.5) 91%,
-        rgba(70, 208, 250, 0.5) 100%
-    );
+    background: linear-gradient(180deg, #fcfaf5, #e2d7c4);
 
     &.myTurn {
         background: linear-gradient(
-            138deg,
-            rgba(212, 175, 55, 0.4) 0%,
-            rgba(230, 190, 70, 0.35) 27%,
-            rgba(245, 215, 110, 0.3) 56%,
-            rgba(240, 210, 90, 0.45) 75%,
-            rgba(225, 185, 60, 0.5) 91%,
-            rgba(212, 175, 55, 0.55) 100%
+            180deg,
+            hsl(41, 93%, 88%),
+            hsl(38, 84%, 83%)
         );
     }
 
-    &::after {
-        position: absolute;
-        border-radius: 2rem;
-        inset: -5px;
-        content: "";
-        z-index: -1;
-
-        background: linear-gradient(
-            148deg,
-            rgba(230, 230, 230, 0.651) 0%,
-            rgba(219, 219, 219, 0.63) 49%,
-            rgba(175, 175, 175, 0.637) 100%
-        );
-    }
+  border-radius: 0.5rem;
 }
 
 .paused {
@@ -718,7 +713,7 @@ const getPublicIdFromFieldFinish = (field) => {
 }
 
 .whos-turn {
-    font-family: "Caveat Brush";
+    font-family: "Open sans";
     text-align: center;
 
     font-size: 2.25rem;

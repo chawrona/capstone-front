@@ -1,11 +1,23 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from "vue";
 
-import Music from "@/assets/music.svg";
 
+import { soundBus } from "../audio/soundBus";
 import { useAppStore } from "../store/useAppStore";
+import { usePageSounds } from "../composables/usePageSounds";
+import PlaySoundtrack from "../components/common/PlaySoundtrack.vue";
 
 const store = useAppStore();
+
+const SOUNDTRACK_URL = "/sounds/tale.mp3";
+
+usePageSounds({
+    music: [{ name: "soundtrack", url: SOUNDTRACK_URL }],
+    effects: [
+        { name: "click", url: "/sounds/click.mp3", poolSize: 5 },
+    ],
+});
+
 
 const lobbyId = ref("");
 const awaitingCreateLobby = ref(false);
@@ -28,12 +40,14 @@ onUnmounted(() => {
 });
 
 const createLobby = () => {
+    soundBus.playEffect("click");
     awaitingCreateLobby.value = true;
     store.emit("createLobby");
 };
 
 const joinLobby = () => {
     awaitingJoinLobby.value = true;
+    soundBus.playEffect("click");
     store.emit("joinLobby", {
         lobbyId: lobbyId.value,
     });
@@ -42,6 +56,7 @@ const joinLobby = () => {
 
 <template>
     <div class="app-container">
+        <PlaySoundtrack :url="SOUNDTRACK_URL" />
         <main class="content">
             <h2 class="theme-subtitle">Hungarian Vegas</h2>
             <h1 class="theme-title">BOARD GAMES</h1>
@@ -75,9 +90,7 @@ const joinLobby = () => {
                 </form>
             </div>
         </main>
-        <button class="theme-button sound-button">
-            <img :src="Music" alt="" />
-        </button>
+        
     </div>
 </template>
 

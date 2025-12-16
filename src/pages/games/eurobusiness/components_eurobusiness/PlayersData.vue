@@ -4,6 +4,7 @@ import { computed } from "vue";
 import User from "@/assets/user.png";
 
 import actions from "../actions/actions";
+import getTileRentIndex from "../composables_eurobusiness/getTileRentIndex";
 
 const props = defineProps([
     "playersData",
@@ -13,6 +14,9 @@ const props = defineProps([
     "availableActions",
     "yourTurn",
 ]);
+
+const group1 = [5, 15, 25, 35]
+const group2 = [12, 28]
 
 const players = computed(() => {
     if (props.playersData.length === 4) return props.playersData;
@@ -27,6 +31,35 @@ const players = computed(() => {
     }
     return players;
 });
+
+const getTilePrice = (number) => {
+    const tile = props.gameMap[number];
+    if (tile?.subtype === "utility") {
+        return tile.name === "Automat Kawowy" ?
+        "☕" : "🥪"
+        
+    } else if (tile?.subtype === "winda") {
+        let rent = 25;
+        props.playersData.forEach(player => {
+            if (player.ownerships.includes(number)) {
+                rent = 0;
+                if (player.ownerships.includes(5)) rent += 25;
+                if (player.ownerships.includes(15)) rent += 25;
+                if (player.ownerships.includes(25)) rent += 25;
+                if (player.ownerships.includes(35)) rent += 25;
+            }
+        });
+
+        return `${rent}$`
+    }
+    else if (tile.type === "Budynek") {
+        return props.gameMap[number].rent[getTileRentIndex(number, props.playersData)] + "$"
+    }
+
+    return "";
+};
+
+
 </script>
 
 <template>
@@ -92,7 +125,27 @@ const players = computed(() => {
                     >
                         <div
                             v-for="index in player.ownerships.sort(
-                                (a, b) => a - b,
+                                (a, b) => {
+                                       const aGroup1 = group1.includes(a)
+                                        const bGroup1 = group1.includes(b)
+                                        const aGroup2 = group2.includes(a)
+                                        const bGroup2 = group2.includes(b)
+
+                                        // jeśli oba w tej samej grupie → sort rosnąco w grupie
+                                        if (aGroup1 && bGroup1) return a - b
+                                        if (aGroup2 && bGroup2) return a - b
+
+                                        // jeśli jeden w grupie 1 → trzymaj razem
+                                        if (aGroup1) return 1
+                                        if (bGroup1) return -1
+
+                                        // jeśli jeden w grupie 2 → trzymaj razem
+                                        if (aGroup2) return 1
+                                        if (bGroup2) return -1
+
+                                        // reszta normalnie
+                                        return a - b
+                                }
                             )"
                             :key="index"
                             class="tileCard"
@@ -100,6 +153,9 @@ const players = computed(() => {
                             :class="{
                                 mortgaged:
                                     player.mortgagedCards.includes(index),
+                                    coffee: gameMap[index]?.name === 'Automat Kawowy',
+                                    shop: gameMap[index]?.name === 'Sklepik',
+                                    elevator: gameMap[index]?.subtype === 'winda',
                             }"
                             @click="
                                 () => {
@@ -122,8 +178,7 @@ const players = computed(() => {
                                     Z
                                 </span>
                                 <span v-else>
-                                    {{ props.gameMap[index].rent
-                                    }}<span class="dolar">$</span>
+                                    {{ getTilePrice(index)}}
                                 </span>
                             </div>
                         </div>
@@ -397,6 +452,33 @@ const players = computed(() => {
                 height: 39px;
                 width: 100%;
             }
+        }
+    }
+
+    .coffee, .shop {
+        .top {
+            display: none;
+        }
+
+        border: none!important;
+        .bottom {
+            background-color: #531607;
+            color: white;
+            width: 100%!important;
+            height: 100%!important;
+        }
+    }
+
+    .elevator {
+        .top {
+
+            background-color: #666666;
+        }
+
+        .bottom {
+            color: 666666;
+            border: none;
+     
         }
     }
 }

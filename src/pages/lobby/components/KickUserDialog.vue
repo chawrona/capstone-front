@@ -5,6 +5,7 @@ import ExitWhite from "@/assets/exitWhite.svg";
 
 import { useAppStore } from "../../../store/useAppStore";
 import DialogHeader from "./panels/DialogHeader.vue";
+import { soundBus } from "../../../audio/soundBus";
 
 const props = defineProps(["usersAvailableToKick"]);
 
@@ -21,6 +22,7 @@ defineExpose({
 });
 
 const removeUser = (publicId) => {
+    soundBus.playEffect("click")
     store.emit("removeUser", {
         userToKickPublicId: publicId,
     });

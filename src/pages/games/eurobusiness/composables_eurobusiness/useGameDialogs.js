@@ -13,6 +13,9 @@ export function useGameDialogs(availableActions) {
     const communityCardDialogOpen = ref(false);
     const communityCard = ref(null);
 
+    const housesDialogOpen = ref(false);
+    const houseIndex = ref(0);
+
     const auctionCardDialogOpen = ref(false);
     const auction = ref(null);
 
@@ -30,12 +33,26 @@ export function useGameDialogs(availableActions) {
         propertyCard.value = card;
     };
 
+    const openHouseDialog = (position) => {
+        if (
+            !availableActions.value.includes(actions.sellHouse) &&
+            !availableActions.value.includes(actions.buildHouse)
+        )
+            return;
+
+        if ([12, 28, 15, 25, 35, 5].includes(position)) return;
+
+        housesDialogOpen.value = true;
+        houseIndex.value = position;
+    };
+
     const dialogsOpen = computed(() => {
         return (
             auctionCardDialogOpen.value ||
             communityCardDialogOpen.value ||
             chanceCardDialogOpen.value ||
-            mortgagePropertyCardDialogOpen.value
+            mortgagePropertyCardDialogOpen.value ||
+            housesDialogOpen.value
         );
     });
 
@@ -44,6 +61,7 @@ export function useGameDialogs(availableActions) {
         chanceCardDialogOpen.value = false;
         communityCardDialogOpen.value = false;
         auctionCardDialogOpen.value = false;
+        housesDialogOpen.value = false;
     };
 
     onMounted(() => {
@@ -85,7 +103,10 @@ export function useGameDialogs(availableActions) {
         communityCard,
         communityCardDialogOpen,
         dialogsOpen,
+        houseIndex,
+        housesDialogOpen,
         mortgagePropertyCardDialogOpen,
+        openHouseDialog,
         openMortgagePropertyCardDialog,
         propertyCard,
     };

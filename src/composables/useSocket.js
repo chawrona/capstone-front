@@ -32,7 +32,9 @@ export default function useSocket() {
     });
 
     socket.on("homepage", (payload) => {
-        soundBus.stopMusic();
+        if (route.name !== "lobby") {
+            soundBus.stopMusic();
+        }
         router.push("/");
         store.setLoading(false);
 
@@ -46,7 +48,9 @@ export default function useSocket() {
     });
 
     socket.on("lobby", (lobbyId) => {
-        soundBus.stopMusic();
+        if (route.name !== "home") {
+            soundBus.stopMusic();
+        }
         store.setLoading(true);
         setTimeout(() => {
             router.push(`/${lobbyId}`);

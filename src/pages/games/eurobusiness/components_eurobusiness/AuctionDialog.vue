@@ -50,7 +50,7 @@ const auctioneerColor = computed(() => {
                 </p>
             </div>
 
-            <Card :property-card="auction.tile" />
+            <Card :property-card="auction.tile" :playersData="playersData"/>
         </div>
 
         <div class="bids">

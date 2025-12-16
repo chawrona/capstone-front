@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 
 import { useAppStore } from "../../../store/useAppStore";
 import DialogHeader from "./panels/DialogHeader.vue";
+import { soundBus } from "../../../audio/soundBus";
 
 const props = defineProps([
     "availableColors",
@@ -32,6 +33,7 @@ const blockedColors = computed(() => {
 const userColor = computed(() => props.userColor && props.userColor.name);
 
 const changeUserColor = (newColor) => {
+    soundBus.playEffect("click");
     if (blockedColors.value.includes(newColor.name)) return;
     store.emit("changeUserColor", { newColor });
     closeDialog();

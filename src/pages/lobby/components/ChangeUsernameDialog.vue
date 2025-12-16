@@ -1,8 +1,9 @@
 <script setup>
-import { ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 
 import { useAppStore } from "../../../store/useAppStore";
 import DialogHeader from "./panels/DialogHeader.vue";
+import { soundBus } from "../../../audio/soundBus";
 
 const props = defineProps(["username"]);
 
@@ -20,13 +21,29 @@ defineExpose({
 
 const changeUsernameInput = ref(null);
 const changeUsername = () => {
+    soundBus.playEffect("click");
     store.emit("changeUsername", {
         newUsername: changeUsernameInput.value,
     });
-    localStorage.setItem("username", changeUsernameInput.value);
-    changeUsernameInput.value = "";
-    closeDialog();
+  
 };
+
+onMounted(() => {
+    store.socket.on("usernameChanged", () => {
+        localStorage.setItem("username", changeUsernameInput.value);
+        changeUsernameInput.value = "";
+        closeDialog();
+    })
+    store.socket.on("usernameChangedError", () => {
+        changeUsernameInput.value = "";
+        closeDialog();
+    })
+})
+
+onUnmounted(() => {
+     store.socket.off("usernameChanged")
+     store.socket.off("usernameChangedError")
+})
 </script>
 
 <template>

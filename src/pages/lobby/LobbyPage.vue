@@ -8,8 +8,18 @@ import CenterPanel from "./components/panels/CenterPanel.vue";
 import TopCenterPanel from "./components/panels/TopCenterPanel.vue";
 import TopLeftPanel from "./components/panels/TopLeftPanel.vue";
 import TopRightPanel from "./components/panels/TopRightPanel.vue";
+import { usePageSounds } from "../../composables/usePageSounds";
 
 const store = useAppStore();
+
+const SOUNDTRACK_URL = "/sounds/tale.mp3";
+usePageSounds({
+    music: [{ name: "soundtrack", url: SOUNDTRACK_URL }],
+    effects: [
+        { name: "click", url: "/sounds/click.mp3", poolSize: 5 },
+    ],
+});
+
 
 const data = ref(null);
 

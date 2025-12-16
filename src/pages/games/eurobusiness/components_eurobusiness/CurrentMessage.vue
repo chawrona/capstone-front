@@ -20,8 +20,9 @@ const props = defineProps([
 
 usePageSounds({
     effects: [
-        { name: "endTurn", url: "/sounds/endTurn.mp3" },
+        { name: "endTurn", url: "/sounds/endTurn.mp3", poolSize: 3 },
         { name: "pay", url: "/sounds/pay.mp3" },
+        { name: "turn", url: "/sounds/turn.mp3" },
     ],
 });
 
@@ -65,21 +66,21 @@ const replaceLogMessage = (message) => {
             class="eurobusiness-button tax-button"
             @click="payTax"
         >
-            Zapłać podatek 75$
+            Opłać warunek 75$
         </button>
         <button
             v-if="availableActions.includes(actions.payIncomeTax) && yourTurn"
             class="eurobusiness-button incomeTax-button"
             @click="payIncomeTax"
         >
-            Zapłać dochowody 150$
+            Zapłać czesne 150$
         </button>
         <button
             v-if="availableActions.includes(actions.payJail) && yourTurn"
             class="eurobusiness-button jail-button"
             @click="payJail"
         >
-            Zapłać za wyjście z więzienia
+            Przekup prowadzącego (200$)
         </button>
         <div>
             <button
@@ -89,7 +90,7 @@ const replaceLogMessage = (message) => {
                 class="eurobusiness-button buy-button"
                 @click="buyBuilding"
             >
-                Kup budynek
+                Kup pole
             </button>
             <button
                 v-if="
@@ -186,7 +187,7 @@ const replaceLogMessage = (message) => {
 }
 
 .auction-button {
-    left: 170px;
+    left: 135px;
     background-color: #d30303;
     &:hover {
         background-color: #f02f2f;

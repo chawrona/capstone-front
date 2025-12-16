@@ -2,7 +2,9 @@ import { ref, onMounted, onBeforeUnmount } from "vue";
 
 import { useAppStore } from "@/store/useAppStore";
 
-export function useGameData() {
+import { soundBus } from "../../../../audio/soundBus";
+
+export function useGameData(isPaused) {
     const store = useAppStore();
 
     const yourTurn = ref(null);
@@ -16,6 +18,7 @@ export function useGameData() {
     const logs = ref(["Brak logów"]);
     const time = ref(59);
     const intervalId = ref(null);
+    const endGame = ref(false);
 
     const eventsMap = {
         availableActions,
@@ -40,8 +43,12 @@ export function useGameData() {
                 }
             }
 
+            isPaused.value = data.paused;
+            console.log("GameDataRequest Pauza");
+
             intervalId.value = setInterval(() => {
-                time.value = !time.value ? 0 : time.value - 1;
+                if (!isPaused.value)
+                    time.value = !time.value ? 0 : time.value - 1;
             }, 1000);
 
             store.setLoading(false);
@@ -53,9 +60,28 @@ export function useGameData() {
             });
         }
 
-        store.socket.on("endGame", () => {
-            alert("Koniec gry");
+        store.socket.on("availableActions", (actions) => {
+            if (actions.includes(actions.auction)) {
+                soundBus.playEffect("bell");
+            }
         });
+
+        store.socket.on("rollResult", () => {
+            soundBus.playEffect("roll");
+        });
+
+        store.socket.on("yourTurn", (turn) => {
+            if (turn) {
+                soundBus.playEffect("turn");
+            } else {
+                soundBus.playEffect("endTurn");
+            }
+        });
+
+        store.socket.on(
+            "endGame",
+            (endGameData) => (endGame.value = endGameData),
+        );
 
         store.emit("gameData", { eventName: "gameDataRequest" });
     });
@@ -64,6 +90,7 @@ export function useGameData() {
         if (!store.socket) return;
 
         store.socket.off("gameDataRequest");
+        store.socket.off("endGame");
 
         for (const eventName in eventsMap) {
             store.socket.off(eventName);
@@ -75,6 +102,7 @@ export function useGameData() {
     return {
         availableActions,
         currentMessage,
+        endGame,
         gameMap,
         logs,
         playersData,

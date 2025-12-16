@@ -1,6 +1,7 @@
 <script setup>
 import X from "@/assets/X.svg";
 const props = defineProps(["title", "closeDialogCallback"]);
+import { soundBus } from "../../../../audio/soundBus";
 </script>
 
 <template>
@@ -8,7 +9,7 @@ const props = defineProps(["title", "closeDialogCallback"]);
         <h1 class="dialog-title">{{ props.title }}</h1>
         <button
             class="theme-button close-dialog"
-            @click="closeDialogCallback()"
+            @click="() => {closeDialogCallback(); soundBus.playEffect('click')}"
         >
             <img :src="X" alt="" class="close-icon" />
         </button>

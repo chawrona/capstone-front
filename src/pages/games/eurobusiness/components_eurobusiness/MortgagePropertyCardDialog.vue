@@ -9,6 +9,7 @@ const props = defineProps([
     "mortgagePropertyCard",
     "redeemPropertyCard",
     "currentPlayer",
+    "playersData"
 ]);
 
 const mortgage = computed(() => {
@@ -27,7 +28,7 @@ const mortgage = computed(() => {
                     : "Czy chcesz zastawić kartę?"
             }}
         </h2>
-        <Card :property-card="propertyCard" />
+        <Card :property-card="propertyCard" :players-data="playersData"/>
         <div class="buttons">
             <button
                 class="eurobusiness-button mortgage-button"

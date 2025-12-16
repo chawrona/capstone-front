@@ -1,6 +1,7 @@
 <script setup>
 import { useRoute } from "vue-router";
 import { useToast } from "vue-toast-notification";
+import { soundBus } from "../../audio/soundBus";
 
 const route = useRoute();
 const toast = useToast();
@@ -8,6 +9,7 @@ const toast = useToast();
 const copyUrl = async () => {
     try {
         await navigator.clipboard.writeText(window.location.href);
+        soundBus.playEffect("click");
         toast.success("Skopiowano pomyślnie!", {
             duration: 2000,
             position: "top-right",

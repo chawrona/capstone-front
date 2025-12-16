@@ -76,8 +76,8 @@ watch(
     height: var(--width);
     transform-style: preserve-3d;
     transition: transform 1s;
-    font-size: 16px;
-    transform: scale(0.75);
+    font-size: 20px;
+   
 }
 
 .dot {

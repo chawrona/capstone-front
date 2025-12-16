@@ -9,6 +9,7 @@ import Players from "@/assets/users.svg";
 import VintageBorderContainer from "../../../components/common/VintageBorderContainer.vue";
 import { useAppStore } from "../../../store/useAppStore";
 import DialogHeader from "./panels/DialogHeader.vue";
+import { soundBus } from "../../../audio/soundBus";
 
 const props = defineProps(["isAdmin", "availableGames", "currentGame"]);
 
@@ -29,6 +30,7 @@ const changeGame = (gameTitle) => {
     if (props.currentGame.title != gameTitle) {
         store.emit("changeGame", { gameTitle });
     }
+    soundBus.playEffect("click");
     closeDialog();
 };
 </script>

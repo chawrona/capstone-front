@@ -21,12 +21,14 @@ const props = defineProps([
     "useOutOfJailCard",
     "gameMap",
     "tilesOwnedBySomeone",
+    "openHouseDialog"
 ]);
 
 usePageSounds({
     effects: [
         { name: "roll", url: "/sounds/roll.mp3" },
         { name: "drawCard", url: "/sounds/drawCard.mp3" },
+        { name: "bell", url: "/sounds/bell.mp3" },
     ],
 });
 
@@ -68,14 +70,46 @@ const isTileOwned = (position) => {
     );
 };
 
+const isTileOwnedByYou = (position) => {
+    if (!isTileOwned(position)) return false;
+    const player = props.playersData.find(player => player.publicId === props.yourPublicId);
+    return player.ownerships.includes(position);
+}
+
 const getCellPrice = (number) => {
     const tile = props.gameMap[number - 1];
-    if (tile.type === "Budynek") {
-        return (isTileOwned(number - 1) ? tile.rent : tile.price) + "$";
+    if (tile?.subtype === "utility") {
+        return "x4 / x10";
+    } else if (tile?.subtype === "winda") {
+        let rent = 25;
+        props.playersData.forEach(player => {
+            if (player.ownerships.includes(number - 1)) {
+                rent = 0;
+                if (player.ownerships.includes(5)) rent += 25;
+                if (player.ownerships.includes(15)) rent += 25;
+                if (player.ownerships.includes(25)) rent += 25;
+                if (player.ownerships.includes(35)) rent += 25;
+            }
+        });
+
+        return `${rent}$`
+    }
+    else if (tile.type === "Budynek") {
+        return (isTileOwned(number - 1) ? tile.rent[0] : tile.price) + "$";
     }
 
     return "";
 };
+
+const getHouseNumber = (position) => {
+    props.playersData.forEach(player => {
+        if (player.ownerships.includes(position)) {
+            return player.properties[position] ?? 0;
+        }
+    });
+    return 0;
+}
+
 </script>
 
 <template>
@@ -138,13 +172,14 @@ const getCellPrice = (number) => {
             }"
             @click="useOutOfJailCard"
         >
-            Out
+            Zdane
         </div>
 
         <div
             v-for="number in 40"
             :key="number"
             class="cell"
+            :data-houses="getHouseNumber(number - 1)"
             :class="{
                 cells1to9: number - 1 > 0 && number - 1 < 10,
                 cells11to19: number - 1 > 10 && number - 1 < 20,
@@ -152,8 +187,12 @@ const getCellPrice = (number) => {
                 cells31to39: number - 1 > 30 && number - 1 < 40,
                 [`cell${number - 1}`]: true,
                 building: gameMap[number - 1].type === 'Budynek',
+                elevator: gameMap[number - 1]?.subtype === 'winda',
+                utility: number === 13 || number === 29,
                 isTileOwned: isTileOwned(number - 1),
+                isYourTile: isTileOwnedByYou(number - 1)
             }"
+            @click="() => { if(isTileOwnedByYou(number - 1)) openHouseDialog(number - 1) }"
             :style="`grid-area: cell${number - 1}; ${getBuildingColor(number)}; --backgroundIfOwned: ${tilesOwnedBySomeone[number - 1]}`"
         >
             <p class="cell-name">{{ getCellName(number) }}</p>
@@ -234,24 +273,126 @@ const getCellPrice = (number) => {
     min-width: 0;
     min-height: 0;
 
+    &.cell2, &.cell17, &.cell33 {
+        background-color: #e47440;
+      
+        &::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: url("../../../../assets/games/gameAssets/eurobusiness/chest.svg");
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-size: 75%;
+            filter: invert(1);
+        }
+    }
+
+    &.cell2 {
+        &::after {
+            rotate: 90deg;
+            background-size: 55%;
+        }
+    }
+
+    &.cell17 {
+        &::after {
+            rotate: 180deg;
+        }
+    }
+
+    &.cell7,
+    &.cell22,
+    &.cell36 {
+        background-color: #40a2e4;
+
+        &::after {
+            content: "?";
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 4rem;
+            font-weight: 700;
+            color: #fff;
+
+            line-height: 1;
+            pointer-events: none;
+        }
+    }
+
+    &.cell38 {
+        background-image: url("../../../../assets/games/gameAssets/eurobusiness/diamond.svg");
+        background-position: center;
+        background-size: 65%;
+        background-repeat: no-repeat;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        &::before {
+            content: "Warunek";
+            text-align: center;
+            font-weight: bold;
+            letter-spacing: -0.5px;
+            transform: translateY(-1.6rem);
+        }
+        &::after {
+            content: "75$";
+            text-align: center;
+            font-weight: bold;
+        }
+    }
+
+    &.cell4 {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background-image: url("../../../../assets/games/gameAssets/eurobusiness/czesne.svg");
+        background-position: center;
+        background-size: 55%;
+        background-repeat: no-repeat;
+        &::before {
+            content: "Czesne";
+            text-align: center;
+            font-weight: bold;
+            transform: translateX(1.6rem);
+        }
+        &::after {
+            content: "150$";
+            text-align: center;
+            font-weight: bold;
+        }
+    }
+
+    &.cell22 {
+        &::after {
+            rotate: 180deg;
+        }
+    }
+
     &.cell10 {
         border-right: 2px solid black;
-        border-bottom: 2px solid black;
-
+        border-top: 2px solid black;
+        rotate: 90deg;
         background-image: url("../../../../assets/games/gameAssets/eurobusiness/cell10.png");
         background-position: center;
         background-size: cover;
     }
 
     &.cell20 {
-        border-left: 2px solid black;
-        border-bottom: 2px solid black;
+        border-right: 2px solid black;
+        border-top: 2px solid black;
+        rotate: 180deg;
         background-image: url("../../../../assets/games/gameAssets/eurobusiness/cell20.png");
     }
 
     &.cell30 {
-        border-left: 2px solid black;
         border-top: 2px solid black;
+        border-right: 2px solid black;
+        rotate: -90deg;
         background-image: url("../../../../assets/games/gameAssets/eurobusiness/cell30.png");
     }
 
@@ -267,14 +408,140 @@ const getCellPrice = (number) => {
         flex-direction: column;
         justify-content: space-between;
 
-        .cell-name {
+       .cell-name {
             font-size: 1rem;
-            // font-weight: bold;
+           
         }
 
         .cell-price {
             font-weight: bold;
         }
+    }
+
+    &.building.elevator::after, &.building.cell12:after, &.building.cell28:after  {
+        border: none!important;
+        inset: 0!important;
+        background-image: url("../../../../assets/games/gameAssets/eurobusiness/elevator.svg");
+        width: 100%!important;
+        height: 100%!important;
+        background-repeat: no-repeat;
+    }
+    
+    &.building.cell5.elevator {
+        .cell-name {
+            transform: translateX(1.6rem);
+             font-weight: bold;
+        }
+
+        .cell-price {
+            margin-right: auto;
+        }
+        &::after {
+            background-size: 52.5%;
+            background-position: center 45%;
+            rotate: 90deg;
+        }
+    }
+
+
+    &.building.cell15.elevator {
+        .cell-price {
+            margin-bottom: auto;
+        }
+         .cell-name {
+            transform: translateY(-1.6rem);
+            rotate: 180deg;
+             font-weight: bold;
+        }
+        &::after {
+            background-size: 75%;
+            background-position: center 45%;
+            rotate: 180deg;
+        }
+    }
+
+    &.building.cell12 {
+        .cell-price {
+            margin-bottom: auto;
+        }
+         .cell-name {
+            transform: translateY(-1.6rem);
+            rotate: 180deg;
+            line-height: 1;
+             font-weight: bold;
+        }
+        &::after {
+            background-size: 50%;
+            background-position: center 60%;
+            rotate: 180deg;
+            background-image: url("../../../../assets/games/gameAssets/eurobusiness/coffee.svg");
+        }
+    }
+    &.building.cell25.elevator {
+        .cell-price {
+            margin-left: auto;
+        }
+         .cell-name {
+            transform: translateX(1.6rem);
+             font-weight: bold;
+             rotate: 180deg;
+        }
+         &::after {
+            background-size: 52.5%;
+            background-position: center 45%;
+            rotate: -90deg;
+        }
+    }
+    &.building.cell28 {
+        .cell-price {
+            margin-left: auto;
+        }
+         .cell-name {
+            transform: translateX(1.6rem);
+             font-weight: bold;
+             rotate: 180deg;
+        }
+         &::after {
+            background-size: 52.5%;
+            background-position: center 45%;
+            rotate: -90deg;
+            background-image: url("../../../../assets/games/gameAssets/eurobusiness/food.svg");
+        }
+    }
+    &.building.cell35.elevator {
+        .cell-price {
+            margin-top: auto;
+        }
+        .cell-name {
+            transform: translateY(-1.6rem);
+         
+             font-weight: bold;
+        }
+
+        &::after {
+            background-size: 75%;
+            background-position: center 45%;
+        }
+    }
+
+    &.isTileOwned.building:not(.elevator, .utility)::after {
+        content: attr(data-houses);
+        font-weight: bold;
+        text-align: center;
+        font-size: 1.1rem;
+        padding: 0;
+        color: rgb(15, 15, 15);
+    }
+
+    &.isYourTile:not(.elevator, .utility) {
+        cursor: pointer;
+        &:hover {
+            filter: brightness(0.75);
+        }
+    }
+
+    &.isTileOwned.building.cell39::after, &.building.cell37::after{
+        color: rgb(226, 226, 226);
     }
 
     &.building::after {
@@ -298,7 +565,7 @@ const getCellPrice = (number) => {
 
         &.building::after {
             right: 0;
-            width: 25px;
+            width: 27px;
             height: 100%;
 
             border-left: 2px solid black;
@@ -320,7 +587,7 @@ const getCellPrice = (number) => {
         &.building::after {
             bottom: 0;
             width: 100%;
-            height: 25px;
+            height: 27px;
 
             border-top: 2px solid black;
         }
@@ -342,7 +609,7 @@ const getCellPrice = (number) => {
 
         &.building::after {
             left: 0;
-            width: 25px;
+            width: 27px;
             height: 100%;
             border-right: 2px solid black;
         }
@@ -356,7 +623,7 @@ const getCellPrice = (number) => {
         &.building::after {
             top: 0;
             width: 100%;
-            height: 25px;
+            height: 27px;
             border-bottom: 2px solid black;
         }
     }
@@ -467,7 +734,7 @@ const getCellPrice = (number) => {
     width: 250px;
     height: 140px;
     color: white;
-    font-size: 5rem;
+    font-size: 4rem;
     border: 4px solid white;
     border-radius: 0.5rem;
     transform-origin: center;

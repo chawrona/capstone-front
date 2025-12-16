@@ -8,27 +8,14 @@ export function useGameActions(availableActions, dialogsOpen) {
     const cooldowns = {};
 
     const canEmit = (action) => {
-        console.log(1);
-        console.log(
-            "TEST 1",
-            action,
-            dialogsOpen.value,
-            action !== actions.mortgagePropertyCard,
-            action !== actions.redeemPropertyCard,
-        );
-
         if (
             dialogsOpen.value &&
             action !== actions.mortgagePropertyCard &&
             action !== actions.redeemPropertyCard
         )
             return true;
-        console.log(2);
-
-        console.log("TEST 2", availableActions.value, action);
 
         if (!availableActions.value.includes(action)) return true;
-        console.log(3);
 
         const now = Date.now();
         if (cooldowns[action] && now - cooldowns[action] < 500) return false;
@@ -43,10 +30,21 @@ export function useGameActions(availableActions, dialogsOpen) {
         soundBus.playEffect("roll");
     };
 
+    const buyHouse = (tileIndex) => {
+        if (!canEmit(actions.buildHouse)) return;
+        store.emit("gameData", { data: tileIndex, eventName: "buildHouse" });
+        soundBus.playEffect("pay");
+    };
+
+    const sellHouse = (tileIndex) => {
+        if (!canEmit(actions.rollDice)) return;
+        store.emit("gameData", { data: tileIndex, eventName: "sellHouse" });
+        soundBus.playEffect("roll");
+    };
+
     const endTurn = () => {
         if (!canEmit(actions.endTurn)) return;
         store.emit("gameData", { eventName: "endTurn" });
-        soundBus.playEffect("endTurn");
     };
 
     const pickCommunityCard = () => {
@@ -88,7 +86,6 @@ export function useGameActions(availableActions, dialogsOpen) {
     const refuseToBuyBuilding = () => {
         if (!canEmit(actions.refuseToBuyBuilding)) return;
         store.emit("gameData", { eventName: "refuseToBuyBuilding" });
-        soundBus.playEffect("pay");
     };
 
     const bid = (bidIncrement) => {
@@ -121,7 +118,7 @@ export function useGameActions(availableActions, dialogsOpen) {
     const useOutOfJailCard = () => {
         if (!canEmit(actions.payJail)) return;
         store.emit("gameData", { eventName: "useOutOfJailCard" });
-        soundBus.playEffect("pay");
+        soundBus.playEffect("drawCard");
     };
 
     const mortgagePropertyCard = (card) => {
@@ -145,6 +142,7 @@ export function useGameActions(availableActions, dialogsOpen) {
     return {
         bid,
         buyBuilding,
+        buyHouse,
         end,
         endTurn,
         mortgagePropertyCard,
@@ -157,6 +155,7 @@ export function useGameActions(availableActions, dialogsOpen) {
         redeemPropertyCard,
         refuseToBuyBuilding,
         rollDice,
+        sellHouse,
         useOutOfJailCard,
     };
 }
